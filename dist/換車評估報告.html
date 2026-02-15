@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ford Focus Wagon vs Tesla Model Y RWD 換車經濟效益評估</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --focus-color: #1a56db;
+    --tesla-color: #e31937;
+    --focus-light: #dbeafe;
+    --tesla-light: #fee2e2;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .header p { color: #94a3b8; font-size: 0.9rem; }
+  .header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    margin-top: 0.75rem;
+    color: #cbd5e1;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+  /* Summary Cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .summary-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .summary-card .label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+  .summary-card .value { font-size: 1.5rem; font-weight: 700; }
+  .summary-card .sub { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+  .summary-card.highlight { border-color: var(--green); background: var(--green-light); }
+  .summary-card.highlight .value { color: var(--green); }
+  .summary-card.warn { border-color: var(--amber); background: var(--amber-light); }
+  .summary-card.warn .value { color: var(--amber); }
+
+  /* Section */
+  .section {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .section h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section h3 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.5rem; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.75rem 0; }
+  th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: #f1f5f9; font-weight: 600; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.025em; }
+  td { font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .text-right { text-align: right; }
+  .text-center { text-align: center; }
+  .text-focus { color: var(--focus-color); font-weight: 600; }
+  .text-tesla { color: var(--tesla-color); font-weight: 600; }
+  .text-green { color: var(--green); font-weight: 600; }
+  .text-amber { color: var(--amber); font-weight: 600; }
+  .row-highlight { background: #f8fafc; font-weight: 600; }
+  .row-total { background: #f1f5f9; font-weight: 700; border-top: 2px solid var(--border); }
+
+  /* Chart container */
+  .chart-container { position: relative; width: 100%; max-height: 400px; margin: 1rem 0; }
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* Compare bar */
+  .compare-bar { margin: 0.75rem 0; }
+  .compare-bar .bar-label {
+    display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;
+  }
+  .compare-bar .bar-track {
+    height: 28px; background: #f1f5f9; border-radius: 6px; overflow: hidden;
+    display: flex; position: relative;
+  }
+  .compare-bar .bar-fill {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 600; color: white; min-width: 40px;
+    transition: width 0.8s ease;
+  }
+  .bar-focus { background: var(--focus-color); }
+  .bar-tesla { background: var(--tesla-color); }
+
+  /* Badge / Tag */
+  .tag {
+    display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
+    font-size: 0.75rem; font-weight: 600;
+  }
+  .tag-green { background: var(--green-light); color: var(--green); }
+  .tag-red { background: var(--tesla-light); color: var(--tesla-color); }
+  .tag-blue { background: var(--focus-light); color: var(--focus-color); }
+
+  /* Note */
+  .note {
+    background: #f8fafc; border-left: 3px solid var(--focus-color);
+    padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-secondary);
+    border-radius: 0 6px 6px 0; margin: 0.75rem 0;
+  }
+  .note.green { border-color: var(--green); }
+  .note.amber { border-color: var(--amber); }
+  .note.red { border-color: var(--tesla-color); }
+
+  /* Verdict box */
+  .verdict {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 2px solid var(--green);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin: 1.5rem 0;
+  }
+  .verdict .title { font-size: 1.1rem; font-weight: 700; color: var(--green); margin-bottom: 0.5rem; }
+  .verdict .amount { font-size: 2rem; font-weight: 800; color: #15803d; }
+  .verdict .desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
+
+  /* Footer */
+  .footer {
+    text-align: center; padding: 2rem 1rem; color: var(--text-secondary);
+    font-size: 0.8rem; border-top: 1px solid var(--border);
+    margin-top: 1rem;
+  }
+
+  /* Comparison icons */
+  .vs { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 1rem 0; }
+  .vs-car { text-align: center; }
+  .vs-car .name { font-weight: 700; font-size: 1rem; }
+  .vs-car .price { font-size: 0.85rem; color: var(--text-secondary); }
+  .vs-divider { font-size: 1.5rem; font-weight: 800; color: var(--text-secondary); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header h1 { font-size: 1.3rem; }
+    .chart-row { grid-template-columns: 1fr; }
+    .container { padding: 1rem; }
+    .section { padding: 1rem; }
+    table { font-size: 0.78rem; }
+    th, td { padding: 0.4rem 0.5rem; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media print {
+    .header { background: #1e293b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Ford Focus Wagon vs Tesla Model Y RWD</h1>
+  <p>換車經濟效益評估報告</p>
+  <div class="badge">評估期間：2026 ~ 2036（10 年） ｜ 每月 1,661 km</div>
+</div>
+
+<div class="container">
+
+<!-- Summary Cards -->
+<div class="summary-grid" style="margin-top:-1.5rem; position:relative; z-index:1;">
+  <div class="summary-card highlight">
+    <div class="label">10 年 TCO 差額</div>
+    <div class="value">省 $6.7 萬</div>
+    <div class="sub">Tesla 路線略省</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">每年營運節省</div>
+    <div class="value">$70,535</div>
+    <div class="sub">Tesla 比 Focus 省</div>
+  </div>
+  <div class="summary-card warn">
+    <div class="label">前 7 年月支出增加</div>
+    <div class="value">+$10,205</div>
+    <div class="sub">因貸款月付 $16,885</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">第 8 年起月支出</div>
+    <div class="value">$7,483</div>
+    <div class="sub">低於 Focus 的 $13,025</div>
+  </div>
+</div>
+
+<!-- Section 1: Vehicle Comparison -->
+<div class="section">
+  <h2>一、兩車基本資訊</h2>
+  <div class="vs">
+    <div class="vs-car">
+      <div class="name text-focus">Ford Focus Wagon</div>
+      <div class="price">2023 ST-Line Vignale mk4.5</div>
+      <div class="price">NT$ 1,000,000</div>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="vs-car">
+      <div class="name text-tesla">Tesla Model Y RWD</div>
+      <div class="price">2025 Juniper</div>
+      <div class="price">NT$ 1,899,900</div>
+    </div>
+  </div>
+  <table>
+    <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Model Y</th></tr>
+    <tr><td>目前里程</td><td class="text-right">47,473 km</td><td class="text-right">新車</td></tr>
+    <tr><td>動力</td><td class="text-right">1.5L EcoBoost 渦輪</td><td class="text-right">單馬達後驅 220kW</td></tr>
+    <tr><td>油耗 / 能耗</td><td class="text-right">12.64 km/L</td><td class="text-right">155 Wh/km</td></tr>
+    <tr><td>油箱 / 電池</td><td class="text-right">52L</td><td class="text-right">60 kWh (LFP)</td></tr>
+    <tr><td>續航</td><td class="text-right">~650 km</td><td class="text-right">517 km (WLTP)</td></tr>
+  </table>
+</div>
+
+<!-- Section 2: Purchase Plan -->
+<div class="section">
+  <h2>二、購車財務方案</h2>
+  <table>
+    <tr><td>Model Y RWD 車價</td><td class="text-right">NT$ 1,899,900</td></tr>
+    <tr><td>舊車折抵（Focus 殘值）</td><td class="text-right text-green">- NT$ 600,000</td></tr>
+    <tr><td>需貸款金額</td><td class="text-right">NT$ 1,299,900</td></tr>
+    <tr><td>貸款條件</td><td class="text-right">84 期（7 年）/ 2.5%</td></tr>
+    <tr class="row-highlight"><td>每月月付金</td><td class="text-right">NT$ 16,885</td></tr>
+    <tr><td>貸款利息總額</td><td class="text-right">NT$ 118,407</td></tr>
+    <tr><td>充電樁安裝費</td><td class="text-right">NT$ 50,000</td></tr>
+    <tr class="row-total"><td>換車總支出</td><td class="text-right">NT$ 1,468,307</td></tr>
+  </table>
+</div>
+
+<!-- Section 3: Energy Cost -->
+<div class="section">
+  <h2>三、能源成本比較</h2>
+
+  <div class="chart-row">
+    <div>
+      <h3>Ford Focus 油費（每年）</h3>
+      <table>
+        <tr><td>每月用油量</td><td class="text-right">131.4 L</td></tr>
+        <tr><td>平均油價</td><td class="text-right">NT$ 28.16/L</td></tr>
+        <tr class="row-highlight"><td>年度油費</td><td class="text-right text-focus">NT$ 44,405</td></tr>
+        <tr><td>每公里油費</td><td class="text-right">NT$ 2.23</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Tesla Model Y 電費（每年）</h3>
+      <table>
+        <tr><td>每月用電量</td><td class="text-right">257.5 kWh</td></tr>
+        <tr><td>家充 80%（NT$2.50/kWh）</td><td class="text-right">NT$ 6,187</td></tr>
+        <tr><td>外充 20%（NT$8.00/kWh）</td><td class="text-right">NT$ 4,943</td></tr>
+        <tr class="row-highlight"><td>年度電費</td><td class="text-right text-tesla">NT$ 11,130</td></tr>
+        <tr><td>每公里電費</td><td class="text-right">NT$ 0.56</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>年度能源費用對比</h3>
+  <div class="compare-bar">
+    <div class="bar-label"><span>Focus 油費</span><span>NT$ 44,405</span></div>
+    <div class="bar-track"><div class="bar-fill bar-focus" style="width:100%">NT$ 44,405</div></div>
+  </div>
+  <div class="compare-bar">
+    <div class="bar-label"><span>Tesla 電費</span><span>NT$ 11,130</span></div>
+    <div class="bar-track"><div class="bar-fill bar-tesla" style="width:25.1%">NT$ 11,130</div></div>
+  </div>
+  <div class="note green">每年省下 NT$ 33,275 的能源費用，相當於每月省 NT$ 2,773。Tesla 每公里能源成本僅 Focus 的 25%。</div>
+</div>
+
+<!-- Section 4: Tax -->
+<div class="section">
+  <h2>四、年度稅費比較</h2>
+  <table>
+    <tr><th>稅費</th><th class="text-right">Focus</th><th class="text-right">Tesla (2026~2029)</th><th class="text-right">Tesla (2030~)</th></tr>
+    <tr><td>牌照稅</td><td class="text-right">NT$ 7,120</td><td class="text-right text-green">NT$ 0</td><td class="text-right">NT$ 11,230</td></tr>
+    <tr><td>燃料稅</td><td class="text-right">NT$ 4,800</td><td class="text-right text-green">NT$ 0</td><td class="text-right">NT$ 4,800</td></tr>
+    <tr class="row-total"><td>合計</td><td class="text-right">NT$ 11,920</td><td class="text-right text-green">NT$ 0</td><td class="text-right">NT$ 16,030</td></tr>
+  </table>
+  <div class="note amber">前 4 年每年省 NT$ 11,920。2030 年後電動車免稅到期，Tesla 稅費可能反而比油車高 NT$ 4,110/年。10 年平均仍省 NT$ 2,302/年。</div>
+</div>
+
+<!-- Section 5: Maintenance -->
+<div class="section">
+  <h2>五、保養費用比較（10 年）</h2>
+
+  <div class="chart-container" style="max-height:350px;">
+    <canvas id="maintenanceChart"></canvas>
+  </div>
+
+  <div class="chart-row">
+    <div>
+      <h3 class="text-focus">Focus 保養明細（4.7萬 → 24.7萬 km）</h3>
+      <table>
+        <tr><th>項目</th><th class="text-right">10 年合計</th></tr>
+        <tr><td>定期保養（機油、濾芯等）× 20 次</td><td class="text-right">NT$ 170,000</td></tr>
+        <tr><td>輪胎更換 × 5 組</td><td class="text-right">NT$ 90,000</td></tr>
+        <tr><td>煞車來令片（前+後）</td><td class="text-right">NT$ 26,000</td></tr>
+        <tr><td>煞車碟盤 × 2 次</td><td class="text-right">NT$ 20,000</td></tr>
+        <tr><td>變速箱油 × 3 次</td><td class="text-right">NT$ 13,500</td></tr>
+        <tr><td>電瓶 × 2 次</td><td class="text-right">NT$ 10,000</td></tr>
+        <tr><td>火星塞 × 3 次</td><td class="text-right">NT$ 9,000</td></tr>
+        <tr><td>雨刷 × 10 組</td><td class="text-right">NT$ 8,000</td></tr>
+        <tr><td>皮帶/張緊器</td><td class="text-right">NT$ 8,000</td></tr>
+        <tr><td>冷卻液 × 2 次</td><td class="text-right">NT$ 5,000</td></tr>
+        <tr><td>高里程預備金</td><td class="text-right">NT$ 30,000</td></tr>
+        <tr class="row-total"><td>合計</td><td class="text-right">NT$ 389,500</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3 class="text-tesla">Tesla 保養明細（0 → 20 萬 km）</h3>
+      <table>
+        <tr><th>項目</th><th class="text-right">10 年合計</th></tr>
+        <tr><td>輪胎更換（EV 專用胎）× 5 組</td><td class="text-right">NT$ 125,000</td></tr>
+        <tr><td>雨刷（Tesla 原廠）× 10 組</td><td class="text-right">NT$ 20,960</td></tr>
+        <tr><td>煞車油 × 5 次</td><td class="text-right">NT$ 16,715</td></tr>
+        <tr><td>輪胎對調 × 15 次</td><td class="text-right">NT$ 9,000</td></tr>
+        <tr><td>12V 小電瓶 × 2 次</td><td class="text-right">NT$ 8,000</td></tr>
+        <tr><td>A/C 乾燥劑 × 2 次</td><td class="text-right">NT$ 7,712</td></tr>
+        <tr><td>冷氣濾網 HEPA × 5 次</td><td class="text-right">NT$ 7,710</td></tr>
+        <tr><td>煞車來令片（動能回收免換）</td><td class="text-right text-green">NT$ 0</td></tr>
+        <tr><td colspan="2" style="height:28px;"></td></tr>
+        <tr><td colspan="2" style="height:28px;"></td></tr>
+        <tr class="row-total"><td>合計</td><td class="text-right">NT$ 195,097</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="compare-bar" style="margin-top:1rem;">
+    <div class="bar-label"><span>Focus</span><span>NT$ 389,500</span></div>
+    <div class="bar-track"><div class="bar-fill bar-focus" style="width:100%">NT$ 389,500</div></div>
+  </div>
+  <div class="compare-bar">
+    <div class="bar-label"><span>Tesla</span><span>NT$ 195,097</span></div>
+    <div class="bar-track"><div class="bar-fill bar-tesla" style="width:50.1%">NT$ 195,097</div></div>
+  </div>
+  <div class="note green">Tesla 10 年保養費僅 Focus 的一半，省 NT$ 194,403。主要差異：Focus 需定期換機油（20 次）、煞車耗材磨損快、變速箱油等。</div>
+</div>
+
+<!-- Section 6: Parking -->
+<div class="section">
+  <h2>六、停車費用比較</h2>
+  <table>
+    <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">差額</th></tr>
+    <tr><td>月租停車（每月）</td><td class="text-right">NT$ 2,000</td><td class="text-right">NT$ 600</td><td class="text-right text-green">Tesla 省 NT$ 1,400</td></tr>
+    <tr><td>月租停車（10 年）</td><td class="text-right">NT$ 240,000</td><td class="text-right">NT$ 72,000</td><td class="text-right text-green">Tesla 省 NT$ 168,000</td></tr>
+    <tr><td>臨時停車（每月）</td><td class="text-right">NT$ 500</td><td class="text-right">NT$ 500</td><td class="text-right">—</td></tr>
+  </table>
+  <div class="note green">公有停車場電動車優惠，月租停車每年省 NT$ 16,800。</div>
+</div>
+
+<!-- Section 7: Insurance -->
+<div class="section">
+  <h2>七、保險費用比較</h2>
+  <table>
+    <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">差額</th></tr>
+    <tr><td>強制險 + 第三責任險（每年）</td><td class="text-right">NT$ 12,500</td><td class="text-right">NT$ 18,000</td><td class="text-right text-amber">Tesla 多 NT$ 5,500</td></tr>
+    <tr class="row-total"><td>10 年合計</td><td class="text-right">NT$ 125,000</td><td class="text-right">NT$ 180,000</td><td class="text-right text-amber">Tesla 多 NT$ 55,000</td></tr>
+  </table>
+  <div class="note red">Tesla 因車價較高，保險費每年約多 NT$ 5,500。</div>
+</div>
+
+<!-- Section 8: TCO -->
+<div class="section">
+  <h2>八、10 年 TCO 總持有成本比較</h2>
+
+  <h3>8-1. 年度純營運成本（不含購車與貸款）</h3>
+  <div class="chart-container">
+    <canvas id="opsChart"></canvas>
+  </div>
+  <table>
+    <tr><th>年</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">Tesla 每年省</th></tr>
+    <tr><td>1</td><td class="text-right">$149,703</td><td class="text-right">$73,768</td><td class="text-right text-green">$75,936</td></tr>
+    <tr><td>2</td><td class="text-right">$150,592</td><td class="text-right">$73,768</td><td class="text-right text-green">$76,824</td></tr>
+    <tr><td>3</td><td class="text-right">$151,497</td><td class="text-right">$73,768</td><td class="text-right text-green">$77,730</td></tr>
+    <tr><td>4</td><td class="text-right">$152,421</td><td class="text-right">$73,768</td><td class="text-right text-green">$78,654</td></tr>
+    <tr><td>5</td><td class="text-right">$153,364</td><td class="text-right">$89,798</td><td class="text-right text-green">$63,566</td></tr>
+    <tr><td>6</td><td class="text-right">$154,325</td><td class="text-right">$89,798</td><td class="text-right text-green">$64,528</td></tr>
+    <tr><td>7</td><td class="text-right">$155,306</td><td class="text-right">$89,798</td><td class="text-right text-green">$65,508</td></tr>
+    <tr><td>8</td><td class="text-right">$156,306</td><td class="text-right">$89,798</td><td class="text-right text-green">$66,508</td></tr>
+    <tr><td>9</td><td class="text-right">$157,326</td><td class="text-right">$89,798</td><td class="text-right text-green">$67,528</td></tr>
+    <tr><td>10</td><td class="text-right">$158,367</td><td class="text-right">$89,798</td><td class="text-right text-green">$68,569</td></tr>
+    <tr class="row-total"><td>合計</td><td class="text-right">$1,539,207</td><td class="text-right">$833,857</td><td class="text-right text-green">$705,350</td></tr>
+  </table>
+  <div class="note green">純營運成本 Tesla 每年平均省 NT$ 70,535，10 年省 NT$ 705,350。第 5 年起因 2030 年 EV 免稅到期，Tesla 營運成本略升。</div>
+
+  <h3>8-2. 實際口袋支出（含貸款月付）</h3>
+  <div class="chart-container">
+    <canvas id="pocketChart"></canvas>
+  </div>
+  <table>
+    <tr><th>年</th><th class="text-right">Focus 年支出</th><th class="text-right">Tesla 年支出</th><th class="text-right">Focus 累計</th><th class="text-right">Tesla 累計</th></tr>
+    <tr><td>0</td><td class="text-right">—</td><td class="text-right">—</td><td class="text-right">$0</td><td class="text-right">$50,000</td></tr>
+    <tr><td>1</td><td class="text-right">$149,703</td><td class="text-right">$276,383</td><td class="text-right">$149,703</td><td class="text-right">$326,383</td></tr>
+    <tr><td>2</td><td class="text-right">$150,592</td><td class="text-right">$276,383</td><td class="text-right">$300,295</td><td class="text-right">$602,766</td></tr>
+    <tr><td>3</td><td class="text-right">$151,497</td><td class="text-right">$276,383</td><td class="text-right">$451,792</td><td class="text-right">$879,149</td></tr>
+    <tr><td>4</td><td class="text-right">$152,421</td><td class="text-right">$276,383</td><td class="text-right">$604,214</td><td class="text-right">$1,155,532</td></tr>
+    <tr><td>5</td><td class="text-right">$153,364</td><td class="text-right">$292,413</td><td class="text-right">$757,578</td><td class="text-right">$1,447,945</td></tr>
+    <tr><td>6</td><td class="text-right">$154,325</td><td class="text-right">$292,413</td><td class="text-right">$911,903</td><td class="text-right">$1,740,358</td></tr>
+    <tr><td>7</td><td class="text-right">$155,306</td><td class="text-right">$292,413</td><td class="text-right">$1,067,209</td><td class="text-right">$2,032,771</td></tr>
+    <tr><td>8</td><td class="text-right">$156,306</td><td class="text-right text-green">$89,798</td><td class="text-right">$1,223,515</td><td class="text-right">$2,122,569</td></tr>
+    <tr><td>9</td><td class="text-right">$157,326</td><td class="text-right text-green">$89,798</td><td class="text-right">$1,380,841</td><td class="text-right">$2,212,366</td></tr>
+    <tr><td>10</td><td class="text-right">$158,367</td><td class="text-right text-green">$89,798</td><td class="text-right">$1,539,207</td><td class="text-right">$2,302,164</td></tr>
+  </table>
+  <div class="note">Tesla 前 7 年因貸款月付，年支出約 NT$ 27~29 萬。第 8 年起貸款結清，年支出降至 NT$ 9 萬，低於 Focus 的 NT$ 15.6 萬。</div>
+
+  <h3>8-3. 每月現金流</h3>
+  <table>
+    <tr><th>情境</th><th class="text-right">Focus</th><th class="text-right">Tesla</th></tr>
+    <tr><td>每月支出（前 7 年，Tesla 含貸款）</td><td class="text-right">NT$ 12,827</td><td class="text-right text-amber">NT$ 23,032</td></tr>
+    <tr><td>每月支出（第 8~10 年）</td><td class="text-right">NT$ 13,025</td><td class="text-right text-green">NT$ 7,483</td></tr>
+  </table>
+
+  <h3>8-4. 10 年 TCO 費用結構</h3>
+  <div class="chart-container" style="max-height:350px;">
+    <canvas id="tcoBreakdownChart"></canvas>
+  </div>
+  <table>
+    <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">差額</th></tr>
+    <tr><td>購車淨成本</td><td class="text-right">$0</td><td class="text-right">$1,299,900</td><td class="text-right text-amber">+$1,299,900</td></tr>
+    <tr><td>充電樁安裝</td><td class="text-right">$0</td><td class="text-right">$50,000</td><td class="text-right">+$50,000</td></tr>
+    <tr><td>貸款利息</td><td class="text-right">$0</td><td class="text-right">$118,407</td><td class="text-right">+$118,407</td></tr>
+    <tr><td>能源費（油/電）</td><td class="text-right">$486,227</td><td class="text-right">$111,300</td><td class="text-right text-green">-$374,927</td></tr>
+    <tr><td>保養維修</td><td class="text-right">$389,500</td><td class="text-right">$195,097</td><td class="text-right text-green">-$194,403</td></tr>
+    <tr><td>保險</td><td class="text-right">$125,000</td><td class="text-right">$180,000</td><td class="text-right text-amber">+$55,000</td></tr>
+    <tr><td>稅費</td><td class="text-right">$119,200</td><td class="text-right">$96,180</td><td class="text-right text-green">-$23,020</td></tr>
+    <tr><td>停車月租</td><td class="text-right">$240,000</td><td class="text-right">$72,000</td><td class="text-right text-green">-$168,000</td></tr>
+    <tr><td>臨停 + eTag + 洗車</td><td class="text-right">$179,280</td><td class="text-right">$179,280</td><td class="text-right">$0</td></tr>
+    <tr class="row-total"><td>10 年總支出</td><td class="text-right">$1,539,207</td><td class="text-right">$2,302,164</td><td class="text-right">+$762,957</td></tr>
+  </table>
+
+  <h3>8-5. 考慮殘值後的淨成本</h3>
+  <div class="verdict">
+    <div class="title">10 年 TCO 結果：兩者幾乎打平，Tesla 略省</div>
+    <div class="amount">NT$ 67,043</div>
+    <div class="desc">
+      Focus 路線淨成本 NT$ 1,989,207（營運 $1,539,207 + 折舊 $450,000）<br>
+      Tesla 路線淨成本 NT$ 1,922,164（購車差 + 利息 + 營運 $833,857 - 殘值 $380,000）
+    </div>
+  </div>
+</div>
+
+<!-- Section 9: Breakeven -->
+<div class="section">
+  <h2>九、損益平衡與節省來源</h2>
+
+  <table>
+    <tr><td>Tesla 純營運成本每年省</td><td class="text-right text-green">NT$ 70,535</td></tr>
+    <tr><td>換車額外投入成本</td><td class="text-right">NT$ 1,468,307</td></tr>
+    <tr><td>Tesla 殘值優勢（10 年後多值）</td><td class="text-right text-green">NT$ 230,000</td></tr>
+    <tr><td>換車淨成本</td><td class="text-right">NT$ 1,238,307</td></tr>
+    <tr class="row-highlight"><td>靠營運節省回本年數</td><td class="text-right">約 17.6 年</td></tr>
+  </table>
+
+  <h3>Tesla 每年節省來源拆解</h3>
+  <div class="chart-container" style="max-height:300px;">
+    <canvas id="savingsChart"></canvas>
+  </div>
+  <table>
+    <tr><th>節省項目</th><th class="text-right">年省金額</th><th class="text-right">佔比</th></tr>
+    <tr><td>油費 → 電費</td><td class="text-right text-green">NT$ 33,275</td><td class="text-right">47.2%</td></tr>
+    <tr><td>保養維修</td><td class="text-right text-green">NT$ 19,440</td><td class="text-right">27.6%</td></tr>
+    <tr><td>停車月租優惠</td><td class="text-right text-green">NT$ 16,800</td><td class="text-right">23.8%</td></tr>
+    <tr><td>稅費</td><td class="text-right text-green">NT$ 2,302</td><td class="text-right">3.3%</td></tr>
+    <tr><td>保險（Tesla 較貴）</td><td class="text-right text-amber">-NT$ 5,500</td><td class="text-right">-7.8%</td></tr>
+    <tr class="row-total"><td>合計</td><td class="text-right text-green">NT$ 70,535</td><td class="text-right">100%</td></tr>
+  </table>
+</div>
+
+<!-- Section 10: Sensitivity -->
+<div class="section">
+  <h2>十、敏感度分析</h2>
+
+  <h3>油價變動影響</h3>
+  <div class="chart-container" style="max-height:300px;">
+    <canvas id="sensitivityChart"></canvas>
+  </div>
+  <table>
+    <tr><th>油價變動</th><th class="text-right">Focus 10年油費</th><th class="text-right">10年淨成本差額</th></tr>
+    <tr><td>-10%</td><td class="text-right">NT$ 437,605</td><td class="text-right text-amber">Tesla 多花 ~$4 萬</td></tr>
+    <tr><td>不變</td><td class="text-right">NT$ 486,227</td><td class="text-right text-green">Tesla 省 ~$6.7 萬</td></tr>
+    <tr><td>+10%</td><td class="text-right">NT$ 534,850</td><td class="text-right text-green">Tesla 省 ~$12 萬</td></tr>
+    <tr><td>+20%</td><td class="text-right">NT$ 583,473</td><td class="text-right text-green">Tesla 省 ~$17 萬</td></tr>
+    <tr><td>+30%</td><td class="text-right">NT$ 632,096</td><td class="text-right text-green">Tesla 省 ~$22 萬</td></tr>
+  </table>
+  <div class="note">油價不變時兩者接近打平。油價上漲 10% 以上，Tesla 優勢明顯擴大。</div>
+
+  <h3>關鍵變數影響</h3>
+  <table>
+    <tr><th>情境假設</th><th>對結論的影響</th></tr>
+    <tr><td>Focus 殘值只剩 10 萬</td><td>Tesla 優勢擴大至省 NT$ 11.7 萬</td></tr>
+    <tr><td>Tesla 車價降 10 萬</td><td>Tesla 優勢擴大至省 NT$ 16.7 萬</td></tr>
+    <tr><td>年行駛增加到 2.5 萬 km</td><td>Tesla 每年多省約 2 萬，10 年優勢約 NT$ 27 萬</td></tr>
+    <tr><td>Focus 出現大修 15 萬</td><td>Tesla 優勢擴大至省 NT$ 21.7 萬</td></tr>
+    <tr><td>電動車停車優惠取消</td><td class="text-amber">Tesla 優勢縮小至約打平</td></tr>
+    <tr><td>2030 後 EV 免稅延長</td><td>Tesla 每年多省約 NT$ 1.6 萬</td></tr>
+  </table>
+</div>
+
+<!-- Section 11: Non-financial -->
+<div class="section">
+  <h2>十一、非財務因素評估</h2>
+  <table>
+    <tr><th>面向</th><th>Focus</th><th>Tesla</th></tr>
+    <tr><td>加油/充電便利性</td><td>加油站隨處有，5 分鐘加滿</td><td>家充過夜免跑站；長途需規劃</td></tr>
+    <tr><td>車內空間</td><td>旅行車空間充裕</td><td>SUV 更大，適合家庭（兩大一小）</td></tr>
+    <tr><td>安全配備</td><td>Co-Pilot360</td><td>Autopilot + 哨兵模式</td></tr>
+    <tr><td>科技體驗</td><td>傳統車機</td><td>OTA 更新、大螢幕</td></tr>
+    <tr><td>維修體系</td><td>全台據點多</td><td>服務中心較少，等待期長</td></tr>
+    <tr><td>環保</td><td>燃油車</td><td>零排放</td></tr>
+    <tr><td>長途旅行</td><td>續航無慮</td><td>需規劃充電，高速續航縮減</td></tr>
+    <tr><td>噪音</td><td>EcoBoost 算安靜</td><td>幾乎無聲，行車品質佳</td></tr>
+  </table>
+</div>
+
+<!-- Section 12: Conclusion -->
+<div class="section">
+  <h2>十二、結論與建議</h2>
+
+  <div class="verdict">
+    <div class="title">10 年 TCO 幾乎打平，Tesla 略省 NT$ 67,043</div>
+    <div class="desc" style="margin-top:1rem; text-align:left; max-width:600px; margin-left:auto; margin-right:auto;">
+      Tesla 每年節省約 NT$ 7 萬營運費用，主要來自：<br>
+      <strong>1.</strong> 油費 → 電費（省 $3.3 萬/年）<br>
+      <strong>2.</strong> 保養費減半（省 $1.9 萬/年）<br>
+      <strong>3.</strong> 電動車停車優惠（省 $1.7 萬/年）
+    </div>
+  </div>
+
+  <h3>現金流注意事項</h3>
+  <div class="note amber">
+    <strong>前 7 年</strong>月支出增加 NT$ 10,205（Focus $12,827 vs Tesla $23,032）<br>
+    <strong>第 8 年起</strong>月支出反而減少 NT$ 5,344（Focus $13,025 vs Tesla $7,483）<br>
+    需確保前 7 年每月多出約 1 萬元的還款能力。
+  </div>
+
+  <h3>建議的決策時機</h3>
+  <table>
+    <tr><td><strong>現在換</strong></td><td>如果家庭現金流可承受前 7 年每月多 1 萬元的支出。從 TCO 來看經濟上合理，加上 Focus 高里程後的不確定維修風險，Tesla 實際上可能更省。</td></tr>
+    <tr><td><strong>等 1~2 年</strong></td><td>如果想等 Model Y 進一步降價、或觀察 Focus 在 6~8 萬 km 後的可靠性表現。</td></tr>
+    <tr><td><strong>Focus 出問題時換</strong></td><td>若 Focus 出現大額維修需求（引擎/變速箱），就是最佳換車時機。</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  此報告僅為參考估算，實際費用可能因油價、電價、維修狀況、政策變動等因素而有差異。<br>
+  報告產生日期：2026/02/15 ｜ v2（修正保養費用公平比較、電動車停車優惠）
+</div>
+
+</div><!-- /container -->
+
+<script>
+const focusColor = '#1a56db';
+const teslaColor = '#e31937';
+const focusColorAlpha = 'rgba(26,86,219,0.15)';
+const teslaColorAlpha = 'rgba(227,25,55,0.15)';
+const greenColor = '#16a34a';
+
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif';
+Chart.defaults.font.size = 12;
+
+// Maintenance Comparison Chart
+new Chart(document.getElementById('maintenanceChart'), {
+  type: 'bar',
+  data: {
+    labels: ['定期保養', '輪胎', '煞車', '變速箱/冷卻', '電瓶', '雨刷', '其他'],
+    datasets: [
+      { label: 'Focus', data: [170000, 90000, 46000, 18500, 10000, 8000, 47000], backgroundColor: focusColor },
+      { label: 'Tesla', data: [0, 125000, 0, 0, 8000, 20960, 41137], backgroundColor: teslaColor }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      title: { display: true, text: '10 年保養費用結構比較（NT$）' },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.y.toLocaleString() } }
+    },
+    scales: { y: { ticks: { callback: v => 'NT$ ' + (v/1000) + 'K' } } }
+  }
+});
+
+// Annual Ops Chart
+new Chart(document.getElementById('opsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Y1','Y2','Y3','Y4','Y5','Y6','Y7','Y8','Y9','Y10'],
+    datasets: [
+      { label: 'Focus', data: [149703,150592,151497,152421,153364,154325,155306,156306,157326,158367], backgroundColor: focusColor },
+      { label: 'Tesla', data: [73768,73768,73768,73768,89798,89798,89798,89798,89798,89798], backgroundColor: teslaColor }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      title: { display: true, text: '年度純營運成本比較（NT$）' },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.y.toLocaleString() } }
+    },
+    scales: { y: { beginAtZero: true, ticks: { callback: v => (v/10000) + '萬' } } }
+  }
+});
+
+// Cumulative Pocket Chart
+new Chart(document.getElementById('pocketChart'), {
+  type: 'line',
+  data: {
+    labels: ['Y0','Y1','Y2','Y3','Y4','Y5','Y6','Y7','Y8','Y9','Y10'],
+    datasets: [
+      { label: 'Focus 累計', data: [0,149703,300295,451792,604214,757578,911903,1067209,1223515,1380841,1539207], borderColor: focusColor, backgroundColor: focusColorAlpha, fill: true, tension: 0.3 },
+      { label: 'Tesla 累計', data: [50000,326383,602766,879149,1155532,1447945,1740358,2032771,2122569,2212366,2302164], borderColor: teslaColor, backgroundColor: teslaColorAlpha, fill: true, tension: 0.3 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      title: { display: true, text: '累計口袋支出（含貸款）' },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.y.toLocaleString() } },
+      annotation: { annotations: { line1: { type:'line', yMin:0, yMax:0 } } }
+    },
+    scales: { y: { ticks: { callback: v => (v/10000) + '萬' } } }
+  }
+});
+
+// TCO Breakdown Chart
+new Chart(document.getElementById('tcoBreakdownChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Focus', 'Tesla'],
+    datasets: [
+      { label: '購車+充電樁+利息', data: [0, 1468307], backgroundColor: '#94a3b8' },
+      { label: '能源費', data: [486227, 111300], backgroundColor: '#f59e0b' },
+      { label: '保養維修', data: [389500, 195097], backgroundColor: '#6366f1' },
+      { label: '保險', data: [125000, 180000], backgroundColor: '#ec4899' },
+      { label: '稅費', data: [119200, 96180], backgroundColor: '#14b8a6' },
+      { label: '停車', data: [240000, 72000], backgroundColor: '#8b5cf6' },
+      { label: '其他（臨停+eTag+洗車）', data: [179280, 179280], backgroundColor: '#d1d5db' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      title: { display: true, text: '10 年總支出結構比較' },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.x.toLocaleString() } }
+    },
+    scales: {
+      x: { stacked: true, ticks: { callback: v => (v/10000) + '萬' } },
+      y: { stacked: true }
+    }
+  }
+});
+
+// Savings Breakdown Doughnut
+new Chart(document.getElementById('savingsChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['油費→電費 $33,275', '保養維修 $19,440', '停車優惠 $16,800', '稅費 $2,302'],
+    datasets: [{
+      data: [33275, 19440, 16800, 2302],
+      backgroundColor: ['#f59e0b', '#6366f1', '#8b5cf6', '#14b8a6'],
+      borderWidth: 2, borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '55%',
+    plugins: {
+      title: { display: true, text: 'Tesla 每年節省 NT$ 70,535 來源' },
+      tooltip: { callbacks: { label: ctx => ctx.label + ' (' + Math.round(ctx.parsed/705.35) + '%)' } }
+    }
+  }
+});
+
+// Sensitivity Chart
+new Chart(document.getElementById('sensitivityChart'), {
+  type: 'bar',
+  data: {
+    labels: ['-10%', '不變', '+10%', '+20%', '+30%'],
+    datasets: [{
+      label: 'Tesla 10年淨省金額',
+      data: [-40000, 67043, 120000, 170000, 220000],
+      backgroundColor: ctx => ctx.parsed.y >= 0 ? greenColor : '#ef4444',
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      title: { display: true, text: '油價變動對 10 年 TCO 差額的影響（NT$）' },
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => 'NT$ ' + ctx.parsed.y.toLocaleString() } }
+    },
+    scales: {
+      x: { title: { display: true, text: '油價變動幅度' } },
+      y: {
+        ticks: { callback: v => (v >= 0 ? '+' : '') + (v/10000) + '萬' },
+        grid: { color: ctx => ctx.tick.value === 0 ? '#64748b' : '#e2e8f0' }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
