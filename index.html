@@ -4,546 +4,894 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ford Focus Wagon vs Tesla Model Y RWD 換車經濟效益評估</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --focus-color: #1a56db;
-    --tesla-color: #e31937;
-    --focus-light: #dbeafe;
-    --tesla-light: #fee2e2;
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --text: #1e293b;
-    --text-secondary: #64748b;
-    --border: #e2e8f0;
-    --green: #16a34a;
-    --green-light: #dcfce7;
-    --amber: #d97706;
-    --amber-light: #fef3c7;
+    --focus: #1E40AF;
+    --focus-light: #DBEAFE;
+    --focus-muted: #93C5FD;
+    --tesla: #DC2626;
+    --tesla-light: #FEE2E2;
+    --tesla-muted: #FCA5A5;
+    --green: #059669;
+    --green-light: #D1FAE5;
+    --amber: #D97706;
+    --amber-light: #FEF3C7;
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-alt: #F1F5F9;
+    --text: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --border: #E2E8F0;
+    --border-light: #F1F5F9;
+    --radius: 16px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
+    --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(15,23,42,0.06), 0 2px 4px -2px rgba(15,23,42,0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(15,23,42,0.06), 0 4px 6px -4px rgba(15,23,42,0.04);
+    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  .header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  /* ===== Hero ===== */
+  .hero {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
     color: white;
-    padding: 3rem 1.5rem;
+    padding: 4rem 1.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(30,64,175,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(220,38,38,0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
     text-align: center;
   }
-  .header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
-  .header p { color: #94a3b8; font-size: 0.9rem; }
-  .header .badge {
-    display: inline-block;
-    background: rgba(255,255,255,0.1);
-    padding: 0.25rem 0.75rem;
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 14px;
     border-radius: 999px;
-    font-size: 0.8rem;
-    margin-top: 0.75rem;
-    color: #cbd5e1;
-  }
-
-  .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
-
-  /* Summary Cards */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .summary-card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 1.25rem;
-    border: 1px solid var(--border);
-    text-align: center;
-  }
-  .summary-card .label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
-  .summary-card .value { font-size: 1.5rem; font-weight: 700; }
-  .summary-card .sub { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
-  .summary-card.highlight { border-color: var(--green); background: var(--green-light); }
-  .summary-card.highlight .value { color: var(--green); }
-  .summary-card.warn { border-color: var(--amber); background: var(--amber-light); }
-  .summary-card.warn .value { color: var(--amber); }
-  .summary-card.neutral { border-color: var(--focus-color); background: var(--focus-light); }
-  .summary-card.neutral .value { color: var(--focus-color); }
-
-  /* Section */
-  .section {
-    background: var(--card);
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    padding: 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #94A3B8;
+    letter-spacing: 0.02em;
     margin-bottom: 1.5rem;
   }
-  .section h2 {
-    font-size: 1.2rem;
+  .hero-badge .dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .hero h1 {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .hero h1 .focus-label { color: var(--focus-muted); }
+  .hero h1 .tesla-label { color: var(--tesla-muted); }
+  .hero h1 .vs { color: #64748B; font-weight: 400; font-size: 0.8em; margin: 0 0.15em; }
+  .hero-sub {
+    color: #94A3B8;
+    font-size: 0.9rem;
+    font-weight: 400;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ===== Container ===== */
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* ===== KPI Strip ===== */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: -2rem auto 2.5rem;
+    position: relative;
+    z-index: 2;
+    box-shadow: var(--shadow-lg);
+  }
+  .kpi {
+    background: var(--surface);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    transition: background var(--transition);
+  }
+  .kpi:hover { background: var(--surface-alt); }
+  .kpi-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.3rem;
     font-weight: 700;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--border);
+    letter-spacing: -0.02em;
+  }
+  .kpi-sub {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .kpi-value.green { color: var(--green); }
+  .kpi-value.amber { color: var(--amber); }
+  .kpi-value.focus-c { color: var(--focus); }
+
+  /* ===== Section Card ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition);
+  }
+  .card:hover { box-shadow: var(--shadow); }
+  .card-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
   }
-  .section h3 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.5rem; }
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-icon svg { width: 18px; height: 18px; }
+  .card-icon.blue { background: var(--focus-light); color: var(--focus); }
+  .card-icon.red { background: var(--tesla-light); color: var(--tesla); }
+  .card-icon.green-bg { background: var(--green-light); color: var(--green); }
+  .card-icon.amber-bg { background: var(--amber-light); color: var(--amber); }
+  .card-icon.slate { background: var(--surface-alt); color: var(--text-secondary); }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .card-title .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 1.5rem 0 0.75rem;
+    letter-spacing: -0.01em;
+  }
 
-  /* Tables */
-  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.75rem 0; }
-  th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
-  th { background: #f1f5f9; font-weight: 600; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.025em; }
-  td { font-variant-numeric: tabular-nums; }
+  /* ===== Tables ===== */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.82rem;
+    margin: 0.75rem 0;
+  }
+  th, td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+  }
+  th {
+    background: var(--surface-alt);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    position: sticky;
+    top: 0;
+  }
+  th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+  th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
   tr:last-child td { border-bottom: none; }
+  td { font-variant-numeric: tabular-nums; }
   .text-right { text-align: right; }
   .text-center { text-align: center; }
-  .text-focus { color: var(--focus-color); font-weight: 600; }
-  .text-tesla { color: var(--tesla-color); font-weight: 600; }
+  .text-focus { color: var(--focus); font-weight: 600; }
+  .text-tesla { color: var(--tesla); font-weight: 600; }
   .text-green { color: var(--green); font-weight: 600; }
   .text-amber { color: var(--amber); font-weight: 600; }
-  .row-highlight { background: #f8fafc; font-weight: 600; }
-  .row-total { background: #f1f5f9; font-weight: 700; border-top: 2px solid var(--border); }
+  .row-total {
+    background: var(--surface-alt);
+    font-weight: 700;
+  }
+  .row-total td { border-top: 2px solid var(--border); }
+  .row-highlight { background: rgba(241,245,249,0.5); font-weight: 600; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
 
-  /* Chart container */
-  .chart-container { position: relative; width: 100%; max-height: 400px; margin: 1rem 0; }
-  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-  /* Compare bar */
-  .compare-bar { margin: 0.75rem 0; }
+  /* ===== Compare Bars ===== */
+  .compare-bar { margin: 0.6rem 0; }
   .compare-bar .bar-label {
-    display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;
+    display: flex; justify-content: space-between;
+    font-size: 0.75rem; font-weight: 500;
+    margin-bottom: 4px; color: var(--text-secondary);
+  }
+  .compare-bar .bar-label span:last-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--text);
   }
   .compare-bar .bar-track {
-    height: 28px; background: #f1f5f9; border-radius: 6px; overflow: hidden;
-    display: flex; position: relative;
+    height: 24px;
+    background: var(--surface-alt);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
   }
   .compare-bar .bar-fill {
-    height: 100%; display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem; font-weight: 600; color: white; min-width: 40px;
-    transition: width 0.8s ease;
+    height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem; font-weight: 600; color: white;
+    min-width: 40px;
+    border-radius: 6px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .bar-focus { background: var(--focus-color); }
-  .bar-tesla { background: var(--tesla-color); }
+  .bar-focus { background: var(--focus); }
+  .bar-tesla { background: var(--tesla); }
 
-  /* Badge / Tag */
+  /* ===== Tags ===== */
   .tag {
-    display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
-    font-size: 0.75rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 0.68rem; font-weight: 600;
   }
   .tag-green { background: var(--green-light); color: var(--green); }
-  .tag-red { background: var(--tesla-light); color: var(--tesla-color); }
-  .tag-blue { background: var(--focus-light); color: var(--focus-color); }
+  .tag-red { background: var(--tesla-light); color: var(--tesla); }
+  .tag-blue { background: var(--focus-light); color: var(--focus); }
 
-  /* Note */
-  .note {
-    background: #f8fafc; border-left: 3px solid var(--focus-color);
-    padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--text-secondary);
-    border-radius: 0 6px 6px 0; margin: 0.75rem 0;
+  /* ===== Callout ===== */
+  .callout {
+    display: flex;
+    gap: 12px;
+    background: var(--surface-alt);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0.75rem 0;
+    line-height: 1.5;
+    border-left: 3px solid var(--border);
   }
-  .note.green { border-color: var(--green); }
-  .note.amber { border-color: var(--amber); }
-  .note.red { border-color: var(--tesla-color); }
+  .callout.green { border-color: var(--green); background: #F0FDF4; }
+  .callout.amber { border-color: var(--amber); background: #FFFBEB; }
+  .callout.red { border-color: var(--tesla); background: #FFF1F2; }
+  .callout svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 2px; }
+  .callout.green svg { color: var(--green); }
+  .callout.amber svg { color: var(--amber); }
 
-  /* Verdict box */
+  /* ===== Verdict ===== */
   .verdict {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    position: relative;
+    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
     border: 2px solid var(--green);
-    border-radius: 12px;
-    padding: 1.5rem;
+    border-radius: var(--radius);
+    padding: 2rem;
     text-align: center;
     margin: 1.5rem 0;
+    overflow: hidden;
   }
-  .verdict .title { font-size: 1.1rem; font-weight: 700; color: var(--green); margin-bottom: 0.5rem; }
-  .verdict .amount { font-size: 2rem; font-weight: 800; color: #15803d; }
-  .verdict .desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
-  .verdict.tied {
-    background: linear-gradient(135deg, #f0f4ff 0%, #dbeafe 100%);
-    border-color: var(--focus-color);
+  .verdict::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(5,150,105,0.06) 0%, transparent 70%);
+    pointer-events: none;
   }
-  .verdict.tied .title { color: var(--focus-color); }
-  .verdict.tied .amount { color: #1e40af; }
+  .verdict-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+  }
+  .verdict-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #065F46;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .verdict-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    max-width: 550px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
 
-  /* Footer */
+  /* ===== VS Card ===== */
+  .vs-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    margin: 1rem 0;
+  }
+  .vs-item { text-align: center; }
+  .vs-name { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+  .vs-detail { font-size: 0.78rem; color: var(--text-muted); }
+  .vs-divider {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 800; color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== Two Column ===== */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+  /* ===== Chart ===== */
+  .chart-wrap { position: relative; width: 100%; max-height: 380px; margin: 1rem 0; }
+
+  /* ===== Footer ===== */
   .footer {
-    text-align: center; padding: 2rem 1rem; color: var(--text-secondary);
-    font-size: 0.8rem; border-top: 1px solid var(--border);
-    margin-top: 1rem;
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.7;
   }
 
-  /* Comparison icons */
-  .vs { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 1rem 0; }
-  .vs-car { text-align: center; }
-  .vs-car .name { font-weight: 700; font-size: 1rem; }
-  .vs-car .price { font-size: 0.85rem; color: var(--text-secondary); }
-  .vs-divider { font-size: 1.5rem; font-weight: 800; color: var(--text-secondary); }
-
-  /* Responsive */
+  /* ===== Responsive ===== */
   @media (max-width: 768px) {
-    .header h1 { font-size: 1.3rem; }
-    .chart-row { grid-template-columns: 1fr; }
-    .container { padding: 1rem; }
-    .section { padding: 1rem; }
-    table { font-size: 0.78rem; }
-    th, td { padding: 0.4rem 0.5rem; }
-    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero { padding: 3rem 1rem 2.5rem; }
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    .vs-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .vs-divider { margin: 0 auto; }
+    .card { padding: 1.25rem; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 0.45rem 0.5rem; }
+    .verdict-amount { font-size: 1.8rem; }
+  }
+  @media (max-width: 480px) {
+    .kpi-strip { grid-template-columns: 1fr 1fr; }
+    .kpi-value { font-size: 1.1rem; }
+    .hero h1 { font-size: 1.25rem; }
   }
   @media print {
-    .header { background: #1e293b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .section { break-inside: avoid; }
+    .hero { background: #1E293B !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>Ford Focus Wagon vs Tesla Model Y RWD</h1>
-  <p>換車經濟效益評估報告</p>
-  <div class="badge">評估期間：2026 ~ 2036（10 年） ｜ 每月 1,661 km</div>
-</div>
+<!-- ===== Hero ===== -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      v4 — 2026/04/10 更新
+    </div>
+    <h1>
+      <span class="focus-label">Focus Wagon</span>
+      <span class="vs">vs</span>
+      <span class="tesla-label">Model Y</span>
+    </h1>
+    <p class="hero-sub">換車經濟效益評估 — 10 年期間（2026 ~ 2036）｜月行駛 1,670 km</p>
+  </div>
+</header>
 
 <div class="container">
 
-<!-- Summary Cards -->
-<div class="summary-grid" style="margin-top:-1.5rem; position:relative; z-index:1;">
-  <div class="summary-card neutral">
-    <div class="label">10 年 TCO 差額</div>
-    <div class="value">幾乎打平</div>
-    <div class="sub">Focus 略省 $1.3 萬</div>
+<!-- ===== KPI Strip ===== -->
+<div class="kpi-strip">
+  <div class="kpi">
+    <div class="kpi-label">10 年 TCO 結果</div>
+    <div class="kpi-value green">Tesla 省 $1.9 萬</div>
   </div>
-  <div class="summary-card">
-    <div class="label">每年營運節省</div>
-    <div class="value">$62,516</div>
-    <div class="sub">Tesla 比 Focus 省</div>
+  <div class="kpi">
+    <div class="kpi-label">每年營運節省</div>
+    <div class="kpi-value mono">$65,698</div>
+    <div class="kpi-sub">Tesla vs Focus</div>
   </div>
-  <div class="summary-card warn">
-    <div class="label">前 7 年月支出增加</div>
-    <div class="value">+$10,995</div>
-    <div class="sub">因貸款月付 $16,885</div>
+  <div class="kpi">
+    <div class="kpi-label">月付金（含貸款）</div>
+    <div class="kpi-value amber mono">$18,406</div>
+    <div class="kpi-sub">每月多 $6,333</div>
   </div>
-  <div class="summary-card">
-    <div class="label">第 8 年起月支出</div>
-    <div class="value">$7,483</div>
-    <div class="sub">低於 Focus 的 $12,443</div>
+  <div class="kpi">
+    <div class="kpi-label">貸款方案</div>
+    <div class="kpi-value focus-c mono">$12,254</div>
+    <div class="kpi-sub">120 期 / 2.5%</div>
   </div>
 </div>
 
-<!-- Section 1: Vehicle Comparison -->
-<div class="section">
-  <h2>一、兩車基本資訊</h2>
-  <div class="vs">
-    <div class="vs-car">
-      <div class="name text-focus">Ford Focus Wagon</div>
-      <div class="price">2023 ST-Line Vignale mk4.5</div>
-      <div class="price">NT$ 1,000,000</div>
+<!-- ===== 1. Vehicle Comparison ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon slate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h1a2 2 0 0 1 2 2v4h-2"/><path d="M10 6V4a1 1 0 0 0-1-1H5"/></svg>
+    </div>
+    <div class="card-title"><span class="num">01</span> 兩車基本資訊</div>
+  </div>
+
+  <div class="vs-grid">
+    <div class="vs-item">
+      <div class="vs-name text-focus">Ford Focus Wagon</div>
+      <div class="vs-detail">2023 ST-Line Vignale mk4.5</div>
+      <div class="vs-detail">NT$ 1,000,000</div>
     </div>
     <div class="vs-divider">VS</div>
-    <div class="vs-car">
-      <div class="name text-tesla">Tesla Model Y RWD</div>
-      <div class="price">2025 Juniper</div>
-      <div class="price">NT$ 1,899,900</div>
+    <div class="vs-item">
+      <div class="vs-name text-tesla">Tesla Model Y RWD</div>
+      <div class="vs-detail">2025 Juniper</div>
+      <div class="vs-detail">NT$ 1,899,900</div>
     </div>
   </div>
+
   <table>
     <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Model Y</th></tr>
-    <tr><td>目前里程</td><td class="text-right">47,473 km</td><td class="text-right">新車</td></tr>
+    <tr><td>目前里程</td><td class="text-right mono">50,805 km</td><td class="text-right">新車</td></tr>
     <tr><td>動力</td><td class="text-right">1.5L EcoBoost 渦輪</td><td class="text-right">單馬達後驅 220kW</td></tr>
-    <tr><td>油耗 / 能耗</td><td class="text-right">12.64 km/L</td><td class="text-right">155 Wh/km</td></tr>
+    <tr><td>油耗 / 能耗</td><td class="text-right mono">12.56 km/L</td><td class="text-right mono">155 Wh/km</td></tr>
     <tr><td>油箱 / 電池</td><td class="text-right">52L</td><td class="text-right">60 kWh (LFP)</td></tr>
     <tr><td>續航</td><td class="text-right">~650 km</td><td class="text-right">517 km (WLTP)</td></tr>
   </table>
 </div>
 
-<!-- Section 2: Purchase Plan -->
-<div class="section">
-  <h2>二、購車財務方案</h2>
+<!-- ===== 2. Purchase Plan ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon blue">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+    </div>
+    <div class="card-title"><span class="num">02</span> 購車財務方案（玉山 Tesla 貸款）</div>
+  </div>
+
+  <h3>玉山銀行方案</h3>
   <table>
-    <tr><td>Model Y RWD 車價</td><td class="text-right">NT$ 1,899,900</td></tr>
-    <tr><td>舊車折抵（Focus 殘值）</td><td class="text-right text-green">- NT$ 600,000</td></tr>
-    <tr><td>需貸款金額</td><td class="text-right">NT$ 1,299,900</td></tr>
-    <tr><td>貸款條件</td><td class="text-right">84 期（7 年）/ 2.5%</td></tr>
-    <tr class="row-highlight"><td>每月月付金</td><td class="text-right">NT$ 16,885</td></tr>
-    <tr><td>貸款利息總額</td><td class="text-right">NT$ 118,407</td></tr>
-    <tr><td>充電樁安裝費</td><td class="text-right">NT$ 50,000</td></tr>
-    <tr class="row-total"><td>換車總支出</td><td class="text-right">NT$ 1,468,307</td></tr>
+    <tr><th>項目</th><th class="text-right">方案一（0 頭期）</th><th class="text-right">方案二（頭期 50 萬）</th></tr>
+    <tr><td>貸款金額</td><td class="text-right mono">NT$ 1,899,900</td><td class="text-right mono">NT$ 1,399,900</td></tr>
+    <tr><td>期數 / 利率</td><td class="text-right">120 期 / 2.5%</td><td class="text-right">120 期 / 2.5%</td></tr>
+    <tr class="row-highlight"><td>每月月付金</td><td class="text-right mono">NT$ 17,910</td><td class="text-right mono">NT$ 12,254</td></tr>
   </table>
+
+  <h3>建議方案：Focus 折抵作為頭期</h3>
+  <table>
+    <tr><td>Model Y RWD 車價</td><td class="text-right mono">NT$ 1,899,900</td></tr>
+    <tr><td>舊車折抵（Focus 殘值）</td><td class="text-right text-green mono">- NT$ 600,000</td></tr>
+    <tr><td>需貸款金額</td><td class="text-right mono">NT$ 1,299,900</td></tr>
+    <tr><td>貸款條件</td><td class="text-right">120 期（10 年）/ 2.5% 固定</td></tr>
+    <tr class="row-highlight"><td>每月月付金</td><td class="text-right mono">NT$ 12,254</td></tr>
+    <tr><td>貸款利息總額</td><td class="text-right mono">NT$ 170,597</td></tr>
+    <tr><td>充電樁安裝費</td><td class="text-right mono">NT$ 27,000</td></tr>
+    <tr><td>汽車換購補貼</td><td class="text-right text-green mono">- NT$ 30,000</td></tr>
+    <tr class="row-total"><td>換車總支出</td><td class="text-right mono">NT$ 1,467,497</td></tr>
+  </table>
+
+  <div class="callout green">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>相較 v3 方案（7 年貸款、月付 $16,885），月付降低 $4,631。充電樁安裝費降至 $27,000（原估 $50,000），新增 $30,000 換購補貼。</span>
+  </div>
 </div>
 
-<!-- Section 3: Energy Cost -->
-<div class="section">
-  <h2>三、能源成本比較</h2>
+<!-- ===== 3. Energy Cost ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon amber-bg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <div class="card-title"><span class="num">03</span> 能源成本比較</div>
+  </div>
 
-  <div class="chart-row">
+  <div class="two-col">
     <div>
       <h3>Ford Focus 油費（每年）</h3>
       <table>
-        <tr><td>每月用油量</td><td class="text-right">131.4 L</td></tr>
-        <tr><td>平均油價</td><td class="text-right">NT$ 28.16/L</td></tr>
-        <tr class="row-highlight"><td>年度油費</td><td class="text-right text-focus">NT$ 44,405</td></tr>
-        <tr><td>每公里油費</td><td class="text-right">NT$ 2.23</td></tr>
+        <tr><td>每月用油量</td><td class="text-right mono">133.0 L</td></tr>
+        <tr><td>平均油價</td><td class="text-right mono">NT$ 28.13/L</td></tr>
+        <tr class="row-highlight"><td>年度油費</td><td class="text-right text-focus mono">NT$ 44,883</td></tr>
+        <tr><td>每公里油費</td><td class="text-right mono">NT$ 2.24</td></tr>
       </table>
     </div>
     <div>
       <h3>Tesla Model Y 電費（每年）</h3>
       <table>
-        <tr><td>每月用電量</td><td class="text-right">257.5 kWh</td></tr>
-        <tr><td>家充 80%（NT$2.50/kWh）</td><td class="text-right">NT$ 6,187</td></tr>
-        <tr><td>外充 20%（NT$8.00/kWh）</td><td class="text-right">NT$ 4,943</td></tr>
-        <tr class="row-highlight"><td>年度電費</td><td class="text-right text-tesla">NT$ 11,130</td></tr>
-        <tr><td>每公里電費</td><td class="text-right">NT$ 0.56</td></tr>
+        <tr><td>每月用電量</td><td class="text-right mono">258.9 kWh</td></tr>
+        <tr><td>家充 80%（$2.50/kWh）</td><td class="text-right mono">NT$ 6,212</td></tr>
+        <tr><td>外充 20%（$8.00/kWh）</td><td class="text-right mono">NT$ 4,970</td></tr>
+        <tr class="row-highlight"><td>年度電費</td><td class="text-right text-tesla mono">NT$ 11,182</td></tr>
+        <tr><td>每公里電費</td><td class="text-right mono">NT$ 0.56</td></tr>
       </table>
     </div>
   </div>
 
   <h3>年度能源費用對比</h3>
   <div class="compare-bar">
-    <div class="bar-label"><span>Focus 油費</span><span>NT$ 44,405</span></div>
-    <div class="bar-track"><div class="bar-fill bar-focus" style="width:100%">NT$ 44,405</div></div>
+    <div class="bar-label"><span>Focus 油費</span><span>NT$ 44,883</span></div>
+    <div class="bar-track"><div class="bar-fill bar-focus" style="width:100%">$44,883</div></div>
   </div>
   <div class="compare-bar">
-    <div class="bar-label"><span>Tesla 電費</span><span>NT$ 11,130</span></div>
-    <div class="bar-track"><div class="bar-fill bar-tesla" style="width:25.1%">NT$ 11,130</div></div>
+    <div class="bar-label"><span>Tesla 電費</span><span>NT$ 11,182</span></div>
+    <div class="bar-track"><div class="bar-fill bar-tesla" style="width:24.9%">$11,182</div></div>
   </div>
-  <div class="note green">每年省下 NT$ 33,275 的能源費用，相當於每月省 NT$ 2,773。Tesla 每公里能源成本僅 Focus 的 25%。</div>
+
+  <div class="callout green">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>每年省下 NT$ 33,700 的能源費用，相當於每月省 NT$ 2,808。Tesla 每公里能源成本僅 Focus 的 25%。</span>
+  </div>
 </div>
 
-<!-- Section 4: Tax -->
-<div class="section">
-  <h2>四、年度稅費比較</h2>
+<!-- ===== 4. Tax ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon green-bg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+    <div class="card-title"><span class="num">04</span> 年度稅費比較</div>
+  </div>
+
   <table>
-    <tr><th>稅費</th><th class="text-right">Focus</th><th class="text-right">Tesla (2026~2029)</th><th class="text-right">Tesla (2030~)</th></tr>
-    <tr><td>牌照稅</td><td class="text-right">NT$ 7,120</td><td class="text-right text-green">NT$ 0</td><td class="text-right">NT$ 11,230</td></tr>
-    <tr><td>燃料稅</td><td class="text-right">NT$ 4,800</td><td class="text-right text-green">NT$ 0</td><td class="text-right">NT$ 4,800</td></tr>
-    <tr class="row-total"><td>合計</td><td class="text-right">NT$ 11,920</td><td class="text-right text-green">NT$ 0</td><td class="text-right">NT$ 16,030</td></tr>
+    <tr><th>稅費</th><th class="text-right">Focus</th><th class="text-right">Tesla (2026~2030)</th><th class="text-right">Tesla (2031~)</th></tr>
+    <tr><td>牌照稅</td><td class="text-right mono">NT$ 7,120</td><td class="text-right text-green">NT$ 0</td><td class="text-right mono">NT$ 11,230</td></tr>
+    <tr><td>燃料稅</td><td class="text-right mono">NT$ 4,800</td><td class="text-right text-green">NT$ 0</td><td class="text-right mono">NT$ 4,800</td></tr>
+    <tr class="row-total"><td>合計</td><td class="text-right mono">NT$ 11,920</td><td class="text-right text-green">NT$ 0</td><td class="text-right mono">NT$ 16,030</td></tr>
   </table>
-  <div class="note amber">前 4 年每年省 NT$ 11,920。2030 年後電動車免稅到期，Tesla 稅費可能反而比油車高 NT$ 4,110/年。10 年平均仍省 NT$ 2,302/年。</div>
+
+  <div class="callout amber">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>免稅至 2030/12/31。前 4 年每年省 NT$ 11,920。2031 年後電動車免稅到期，Tesla 稅費可能反而比油車高 NT$ 4,110/年。10 年平均仍省 NT$ 2,302/年。</span>
+  </div>
 </div>
 
-<!-- Section 5: Maintenance -->
-<div class="section">
-  <h2>五、保養費用比較（10 年）</h2>
+<!-- ===== 5. Maintenance ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon slate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    </div>
+    <div class="card-title"><span class="num">05</span> 保養費用比較（10 年）</div>
+  </div>
 
-  <div class="chart-container" style="max-height:350px;">
+  <div class="chart-wrap" style="max-height:340px;">
     <canvas id="maintenanceChart"></canvas>
   </div>
 
-  <div class="chart-row">
+  <h3>實際保養費 vs 原廠報價</h3>
+  <div class="callout amber">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>根據 5 次實際定保紀錄，實際費用平均比原廠報價高 23%。以下預估已依此比例調整。</span>
+  </div>
+  <table>
+    <tr><th>里程</th><th class="text-right">原廠報價</th><th class="text-right">實際費用</th><th class="text-right">差異</th></tr>
+    <tr><td>1 萬 km</td><td class="text-right mono">$3,967</td><td class="text-right mono">$4,196</td><td class="text-right">+6%</td></tr>
+    <tr><td>2 萬 km</td><td class="text-right mono">$5,589</td><td class="text-right mono">$7,643</td><td class="text-right text-amber">+37%</td></tr>
+    <tr><td>3 萬 km</td><td class="text-right mono">$4,399</td><td class="text-right mono">$6,306</td><td class="text-right text-amber">+43%</td></tr>
+    <tr><td>4 萬 km</td><td class="text-right mono">$10,539</td><td class="text-right mono">$10,808</td><td class="text-right">+3%</td></tr>
+    <tr><td>5 萬 km</td><td class="text-right mono">$3,967</td><td class="text-right mono">$6,083</td><td class="text-right text-amber">+53%</td></tr>
+    <tr class="row-total"><td>合計</td><td class="text-right mono">$28,461</td><td class="text-right mono">$35,036</td><td class="text-right text-amber">+23%</td></tr>
+  </table>
+
+  <div class="two-col">
     <div>
-      <h3 class="text-focus">Focus 保養明細（4.7萬 → 24.7萬 km）</h3>
+      <h3 class="text-focus">Focus 保養明細（5.1萬 → 25.1萬 km）</h3>
       <table>
         <tr><th>項目</th><th class="text-right">10 年合計</th></tr>
-        <tr><td>原廠定保（含機油、濾芯、變速箱油等）× 20 次</td><td class="text-right">NT$ 117,408</td></tr>
-        <tr><td>輪胎更換 × 5 組</td><td class="text-right">NT$ 90,000</td></tr>
-        <tr><td>前來令片 × 4 次</td><td class="text-right">NT$ 14,680</td></tr>
-        <tr><td>後來令片 × 4 次</td><td class="text-right">NT$ 11,020</td></tr>
-        <tr><td>前碟盤 × 2 次</td><td class="text-right">NT$ 10,200</td></tr>
-        <tr><td>後碟盤 × 2 次</td><td class="text-right">NT$ 9,000</td></tr>
-        <tr><td>電瓶 × 2 次</td><td class="text-right">NT$ 10,000</td></tr>
-        <tr><td>雨刷 × 10 組</td><td class="text-right">NT$ 9,000</td></tr>
-        <tr><td>皮帶/張緊器 × 1 次</td><td class="text-right">NT$ 8,000</td></tr>
-        <tr><td>高里程預備金</td><td class="text-right">NT$ 30,000</td></tr>
-        <tr class="row-total"><td>合計</td><td class="text-right">NT$ 309,308</td></tr>
+        <tr><td>原廠定保 × 20 次（×1.23 調整）</td><td class="text-right mono">NT$ 144,528</td></tr>
+        <tr><td>輪胎更換 × 5 組</td><td class="text-right mono">NT$ 90,000</td></tr>
+        <tr><td>前來令片 × 4 次</td><td class="text-right mono">NT$ 14,680</td></tr>
+        <tr><td>後來令片 × 4 次</td><td class="text-right mono">NT$ 11,020</td></tr>
+        <tr><td>前碟盤 × 2 次</td><td class="text-right mono">NT$ 10,200</td></tr>
+        <tr><td>後碟盤 × 2 次</td><td class="text-right mono">NT$ 9,000</td></tr>
+        <tr><td>電瓶 × 2 次</td><td class="text-right mono">NT$ 10,000</td></tr>
+        <tr><td>雨刷 × 10 組</td><td class="text-right mono">NT$ 9,000</td></tr>
+        <tr><td>皮帶/張緊器 × 1 次</td><td class="text-right mono">NT$ 8,000</td></tr>
+        <tr><td>高里程預備金</td><td class="text-right mono">NT$ 30,000</td></tr>
+        <tr class="row-total"><td>合計</td><td class="text-right mono">NT$ 336,428</td></tr>
       </table>
     </div>
     <div>
       <h3 class="text-tesla">Tesla 保養明細（0 → 20 萬 km）</h3>
       <table>
         <tr><th>項目</th><th class="text-right">10 年合計</th></tr>
-        <tr><td>輪胎更換（EV 專用胎）× 5 組</td><td class="text-right">NT$ 125,000</td></tr>
-        <tr><td>雨刷（Tesla 原廠）× 10 組</td><td class="text-right">NT$ 20,960</td></tr>
-        <tr><td>煞車油 × 5 次</td><td class="text-right">NT$ 16,715</td></tr>
-        <tr><td>輪胎對調 × 15 次</td><td class="text-right">NT$ 9,000</td></tr>
-        <tr><td>12V 小電瓶 × 2 次</td><td class="text-right">NT$ 8,000</td></tr>
-        <tr><td>A/C 乾燥劑 × 2 次</td><td class="text-right">NT$ 7,712</td></tr>
-        <tr><td>冷氣濾網 HEPA × 5 次</td><td class="text-right">NT$ 7,710</td></tr>
+        <tr><td>輪胎（EV 專用胎）× 5 組</td><td class="text-right mono">NT$ 125,000</td></tr>
+        <tr><td>雨刷（原廠）× 10 組</td><td class="text-right mono">NT$ 20,960</td></tr>
+        <tr><td>煞車油 × 5 次</td><td class="text-right mono">NT$ 16,715</td></tr>
+        <tr><td>輪胎對調 × 15 次</td><td class="text-right mono">NT$ 9,000</td></tr>
+        <tr><td>12V 小電瓶 × 2 次</td><td class="text-right mono">NT$ 8,000</td></tr>
+        <tr><td>A/C 乾燥劑 × 2 次</td><td class="text-right mono">NT$ 7,712</td></tr>
+        <tr><td>冷氣濾網 HEPA × 5 次</td><td class="text-right mono">NT$ 7,710</td></tr>
         <tr><td>煞車來令片（動能回收免換）</td><td class="text-right text-green">NT$ 0</td></tr>
-        <tr><td colspan="2" style="height:28px;"></td></tr>
-        <tr><td colspan="2" style="height:28px;"></td></tr>
-        <tr class="row-total"><td>合計</td><td class="text-right">NT$ 195,097</td></tr>
+        <tr><td colspan="2" style="height:24px;"></td></tr>
+        <tr><td colspan="2" style="height:24px;"></td></tr>
+        <tr class="row-total"><td>合計</td><td class="text-right mono">NT$ 195,097</td></tr>
       </table>
     </div>
   </div>
 
   <div class="compare-bar" style="margin-top:1rem;">
-    <div class="bar-label"><span>Focus</span><span>NT$ 309,308</span></div>
-    <div class="bar-track"><div class="bar-fill bar-focus" style="width:100%">NT$ 309,308</div></div>
+    <div class="bar-label"><span>Focus</span><span>NT$ 336,428</span></div>
+    <div class="bar-track"><div class="bar-fill bar-focus" style="width:100%">$336,428</div></div>
   </div>
   <div class="compare-bar">
     <div class="bar-label"><span>Tesla</span><span>NT$ 195,097</span></div>
-    <div class="bar-track"><div class="bar-fill bar-tesla" style="width:63.1%">NT$ 195,097</div></div>
+    <div class="bar-track"><div class="bar-fill bar-tesla" style="width:58%">$195,097</div></div>
   </div>
-  <div class="note green">Tesla 10 年保養費約 Focus 的 63%，省 NT$ 114,211。Focus 定保費用依原廠報價（每次 3,967~10,539 元），加上煞車、輪胎等磨耗件。Tesla 無內燃機相關耗材，且動能回收延長煞車壽命。</div>
+
+  <div class="callout green">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>Tesla 10 年保養費約 Focus 的 58%，省 NT$ 141,331。Focus 定保費用依實際經驗修正（比原廠報價高 23%）。Tesla 無內燃機相關耗材，動能回收延長煞車壽命。</span>
+  </div>
 </div>
 
-<!-- Section 6: Parking -->
-<div class="section">
-  <h2>六、停車費用比較</h2>
+<!-- ===== 6. Parking ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon green-bg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>
+    </div>
+    <div class="card-title"><span class="num">06</span> 停車費用比較</div>
+  </div>
   <table>
     <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">差額</th></tr>
-    <tr><td>月租停車（每月）</td><td class="text-right">NT$ 2,000</td><td class="text-right">NT$ 600</td><td class="text-right text-green">Tesla 省 NT$ 1,400</td></tr>
-    <tr><td>月租停車（10 年）</td><td class="text-right">NT$ 240,000</td><td class="text-right">NT$ 72,000</td><td class="text-right text-green">Tesla 省 NT$ 168,000</td></tr>
-    <tr><td>臨時停車（每月）</td><td class="text-right">NT$ 500</td><td class="text-right">NT$ 500</td><td class="text-right">—</td></tr>
+    <tr><td>月租停車（每月）</td><td class="text-right mono">NT$ 2,000</td><td class="text-right mono">NT$ 600</td><td class="text-right text-green">Tesla 省 $1,400</td></tr>
+    <tr><td>月租停車（10 年）</td><td class="text-right mono">NT$ 240,000</td><td class="text-right mono">NT$ 72,000</td><td class="text-right text-green">Tesla 省 $168,000</td></tr>
+    <tr><td>臨時停車（每月）</td><td class="text-right mono">NT$ 500</td><td class="text-right mono">NT$ 500</td><td class="text-right">—</td></tr>
   </table>
-  <div class="note green">公有停車場電動車優惠，月租停車每年省 NT$ 16,800。</div>
+  <div class="callout green">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>公有停車場電動車優惠，月租停車每年省 NT$ 16,800。</span>
+  </div>
 </div>
 
-<!-- Section 7: Insurance -->
-<div class="section">
-  <h2>七、保險費用比較</h2>
+<!-- ===== 7. Insurance ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon red">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div class="card-title"><span class="num">07</span> 保險費用比較</div>
+  </div>
   <table>
     <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">差額</th></tr>
-    <tr><td>強制險 + 第三責任險（每年）</td><td class="text-right">NT$ 12,500</td><td class="text-right">NT$ 18,000</td><td class="text-right text-amber">Tesla 多 NT$ 5,500</td></tr>
-    <tr class="row-total"><td>10 年合計</td><td class="text-right">NT$ 125,000</td><td class="text-right">NT$ 180,000</td><td class="text-right text-amber">Tesla 多 NT$ 55,000</td></tr>
+    <tr><td>強制險 + 第三責任險（每年）</td><td class="text-right mono">NT$ 12,500</td><td class="text-right mono">NT$ 18,000</td><td class="text-right text-amber">Tesla 多 $5,500</td></tr>
+    <tr class="row-total"><td>10 年合計</td><td class="text-right mono">NT$ 125,000</td><td class="text-right mono">NT$ 180,000</td><td class="text-right text-amber">Tesla 多 $55,000</td></tr>
   </table>
-  <div class="note red">Tesla 因車價較高，保險費每年約多 NT$ 5,500。</div>
+  <div class="callout red">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Tesla 因車價較高，保險費每年約多 NT$ 5,500。</span>
+  </div>
 </div>
 
-<!-- Section 8: TCO -->
-<div class="section">
-  <h2>八、10 年 TCO 總持有成本比較</h2>
+<!-- ===== 8. TCO ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon blue">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div class="card-title"><span class="num">08</span> 10 年 TCO 總持有成本比較</div>
+  </div>
 
   <h3>8-1. 年度純營運成本（不含購車與貸款）</h3>
-  <div class="chart-container">
+  <div class="chart-wrap">
     <canvas id="opsChart"></canvas>
   </div>
   <table>
     <tr><th>年</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">Tesla 每年省</th></tr>
-    <tr><td>1</td><td class="text-right">$141,684</td><td class="text-right">$73,768</td><td class="text-right text-green">$67,916</td></tr>
-    <tr><td>2</td><td class="text-right">$142,573</td><td class="text-right">$73,768</td><td class="text-right text-green">$68,805</td></tr>
-    <tr><td>3</td><td class="text-right">$143,478</td><td class="text-right">$73,768</td><td class="text-right text-green">$69,710</td></tr>
-    <tr><td>4</td><td class="text-right">$144,402</td><td class="text-right">$73,768</td><td class="text-right text-green">$70,634</td></tr>
-    <tr><td>5</td><td class="text-right">$145,345</td><td class="text-right">$89,798</td><td class="text-right text-green">$55,547</td></tr>
-    <tr><td>6</td><td class="text-right">$146,306</td><td class="text-right">$89,798</td><td class="text-right text-green">$56,508</td></tr>
-    <tr><td>7</td><td class="text-right">$147,287</td><td class="text-right">$89,798</td><td class="text-right text-green">$57,489</td></tr>
-    <tr><td>8</td><td class="text-right">$148,287</td><td class="text-right">$89,798</td><td class="text-right text-green">$58,489</td></tr>
-    <tr><td>9</td><td class="text-right">$149,307</td><td class="text-right">$89,798</td><td class="text-right text-green">$59,509</td></tr>
-    <tr><td>10</td><td class="text-right">$150,348</td><td class="text-right">$89,798</td><td class="text-right text-green">$60,550</td></tr>
-    <tr class="row-total"><td>合計</td><td class="text-right">$1,459,015</td><td class="text-right">$833,857</td><td class="text-right text-green">$625,158</td></tr>
+    <tr><td>1</td><td class="text-right mono">$144,873</td><td class="text-right mono">$73,820</td><td class="text-right text-green mono">$71,053</td></tr>
+    <tr><td>2</td><td class="text-right mono">$145,771</td><td class="text-right mono">$73,820</td><td class="text-right text-green mono">$71,951</td></tr>
+    <tr><td>3</td><td class="text-right mono">$146,687</td><td class="text-right mono">$73,820</td><td class="text-right text-green mono">$72,867</td></tr>
+    <tr><td>4</td><td class="text-right mono">$147,621</td><td class="text-right mono">$73,820</td><td class="text-right text-green mono">$73,801</td></tr>
+    <tr><td>5</td><td class="text-right mono">$148,573</td><td class="text-right mono">$89,850</td><td class="text-right text-green mono">$58,723</td></tr>
+    <tr><td>6</td><td class="text-right mono">$149,545</td><td class="text-right mono">$89,850</td><td class="text-right text-green mono">$59,695</td></tr>
+    <tr><td>7</td><td class="text-right mono">$150,536</td><td class="text-right mono">$89,850</td><td class="text-right text-green mono">$60,686</td></tr>
+    <tr><td>8</td><td class="text-right mono">$151,547</td><td class="text-right mono">$89,850</td><td class="text-right text-green mono">$61,697</td></tr>
+    <tr><td>9</td><td class="text-right mono">$152,578</td><td class="text-right mono">$89,850</td><td class="text-right text-green mono">$62,728</td></tr>
+    <tr><td>10</td><td class="text-right mono">$153,630</td><td class="text-right mono">$89,850</td><td class="text-right text-green mono">$63,780</td></tr>
+    <tr class="row-total"><td>合計</td><td class="text-right mono">$1,491,361</td><td class="text-right mono">$834,380</td><td class="text-right text-green mono">$656,981</td></tr>
   </table>
-  <div class="note green">純營運成本 Tesla 每年平均省 NT$ 62,516，10 年省 NT$ 625,158。第 5 年起 Tesla 營運成本上升，因 2030 年電動車免稅政策到期。</div>
+  <div class="callout green">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>純營運成本 Tesla 每年平均省 NT$ 65,698，10 年省 NT$ 656,981。第 5 年起 Tesla 營運成本上升，因 2031 年電動車免稅政策到期。</span>
+  </div>
 
   <h3>8-2. 實際口袋支出（含貸款月付）</h3>
-  <div class="chart-container">
+  <div class="chart-wrap">
     <canvas id="pocketChart"></canvas>
   </div>
   <table>
     <tr><th>年</th><th class="text-right">Focus 年支出</th><th class="text-right">Tesla 年支出</th><th class="text-right">Focus 累計</th><th class="text-right">Tesla 累計</th></tr>
-    <tr><td>0</td><td class="text-right">—</td><td class="text-right">—</td><td class="text-right">$0</td><td class="text-right">$50,000</td></tr>
-    <tr><td>1</td><td class="text-right">$141,684</td><td class="text-right">$276,383</td><td class="text-right">$141,684</td><td class="text-right">$326,383</td></tr>
-    <tr><td>2</td><td class="text-right">$142,573</td><td class="text-right">$276,383</td><td class="text-right">$284,257</td><td class="text-right">$602,766</td></tr>
-    <tr><td>3</td><td class="text-right">$143,478</td><td class="text-right">$276,383</td><td class="text-right">$427,735</td><td class="text-right">$879,149</td></tr>
-    <tr><td>4</td><td class="text-right">$144,402</td><td class="text-right">$276,383</td><td class="text-right">$572,137</td><td class="text-right">$1,155,532</td></tr>
-    <tr><td>5</td><td class="text-right">$145,345</td><td class="text-right">$292,413</td><td class="text-right">$717,482</td><td class="text-right">$1,447,945</td></tr>
-    <tr><td>6</td><td class="text-right">$146,306</td><td class="text-right">$292,413</td><td class="text-right">$863,788</td><td class="text-right">$1,740,358</td></tr>
-    <tr><td>7</td><td class="text-right">$147,287</td><td class="text-right">$292,413</td><td class="text-right">$1,011,075</td><td class="text-right">$2,032,771</td></tr>
-    <tr><td>8</td><td class="text-right">$148,287</td><td class="text-right text-green">$89,798</td><td class="text-right">$1,159,362</td><td class="text-right">$2,122,569</td></tr>
-    <tr><td>9</td><td class="text-right">$149,307</td><td class="text-right text-green">$89,798</td><td class="text-right">$1,308,669</td><td class="text-right">$2,212,366</td></tr>
-    <tr><td>10</td><td class="text-right">$150,348</td><td class="text-right text-green">$89,798</td><td class="text-right">$1,459,015</td><td class="text-right">$2,302,164</td></tr>
+    <tr><td>0</td><td class="text-right">—</td><td class="text-right">—</td><td class="text-right mono">$0</td><td class="text-right mono">$0</td></tr>
+    <tr><td>1</td><td class="text-right mono">$144,873</td><td class="text-right mono">$220,870</td><td class="text-right mono">$144,873</td><td class="text-right mono">$220,870</td></tr>
+    <tr><td>2</td><td class="text-right mono">$145,771</td><td class="text-right mono">$220,870</td><td class="text-right mono">$290,644</td><td class="text-right mono">$441,740</td></tr>
+    <tr><td>3</td><td class="text-right mono">$146,687</td><td class="text-right mono">$220,870</td><td class="text-right mono">$437,331</td><td class="text-right mono">$662,610</td></tr>
+    <tr><td>4</td><td class="text-right mono">$147,621</td><td class="text-right mono">$220,870</td><td class="text-right mono">$584,952</td><td class="text-right mono">$883,480</td></tr>
+    <tr><td>5</td><td class="text-right mono">$148,573</td><td class="text-right mono">$236,900</td><td class="text-right mono">$733,525</td><td class="text-right mono">$1,120,380</td></tr>
+    <tr><td>6</td><td class="text-right mono">$149,545</td><td class="text-right mono">$236,900</td><td class="text-right mono">$883,070</td><td class="text-right mono">$1,357,280</td></tr>
+    <tr><td>7</td><td class="text-right mono">$150,536</td><td class="text-right mono">$236,900</td><td class="text-right mono">$1,033,606</td><td class="text-right mono">$1,594,180</td></tr>
+    <tr><td>8</td><td class="text-right mono">$151,547</td><td class="text-right mono">$236,900</td><td class="text-right mono">$1,185,153</td><td class="text-right mono">$1,831,080</td></tr>
+    <tr><td>9</td><td class="text-right mono">$152,578</td><td class="text-right mono">$236,900</td><td class="text-right mono">$1,337,731</td><td class="text-right mono">$2,067,980</td></tr>
+    <tr><td>10</td><td class="text-right mono">$153,630</td><td class="text-right mono">$236,900</td><td class="text-right mono">$1,491,361</td><td class="text-right mono">$2,304,880</td></tr>
   </table>
-  <div class="note">Tesla 前 7 年因貸款月付 NT$ 16,885，年支出約 NT$ 27~29 萬；第 8 年起貸款結清，年支出降至約 NT$ 9 萬，低於 Focus 的 NT$ 14.9 萬。</div>
+  <div class="callout">
+    10 年貸款期間 Tesla 每年支出約 NT$ 22~24 萬（月付 $12,254 + 營運），月負擔相較 v3 方案降低約 40%。
+  </div>
 
   <h3>8-3. 每月現金流</h3>
   <table>
     <tr><th>情境</th><th class="text-right">Focus</th><th class="text-right">Tesla</th></tr>
-    <tr><td>每月支出（前 7 年，Tesla 含貸款）</td><td class="text-right">NT$ 12,037</td><td class="text-right text-amber">NT$ 23,032</td></tr>
-    <tr><td>每月支出（第 8~10 年）</td><td class="text-right">NT$ 12,443</td><td class="text-right text-green">NT$ 7,483</td></tr>
+    <tr><td>每月支出（Y1~4，Tesla 含貸款）</td><td class="text-right mono">NT$ 12,073</td><td class="text-right text-amber mono">NT$ 18,406</td></tr>
+    <tr><td>每月支出（Y5~10，Tesla 含貸款）</td><td class="text-right mono">NT$ 12,545</td><td class="text-right text-amber mono">NT$ 19,742</td></tr>
   </table>
 
   <h3>8-4. 10 年 TCO 費用結構</h3>
-  <div class="chart-container" style="max-height:350px;">
+  <div class="chart-wrap" style="max-height:340px;">
     <canvas id="tcoBreakdownChart"></canvas>
   </div>
   <table>
     <tr><th>項目</th><th class="text-right">Focus</th><th class="text-right">Tesla</th><th class="text-right">差額</th></tr>
-    <tr><td>購車淨成本</td><td class="text-right">$0</td><td class="text-right">$1,299,900</td><td class="text-right text-amber">+$1,299,900</td></tr>
-    <tr><td>充電樁安裝</td><td class="text-right">$0</td><td class="text-right">$50,000</td><td class="text-right">+$50,000</td></tr>
-    <tr><td>貸款利息</td><td class="text-right">$0</td><td class="text-right">$118,407</td><td class="text-right">+$118,407</td></tr>
-    <tr><td>能源費（油/電）</td><td class="text-right">$486,227</td><td class="text-right">$111,300</td><td class="text-right text-green">-$374,927</td></tr>
-    <tr><td>保養維修</td><td class="text-right">$309,308</td><td class="text-right">$195,097</td><td class="text-right text-green">-$114,211</td></tr>
-    <tr><td>保險</td><td class="text-right">$125,000</td><td class="text-right">$180,000</td><td class="text-right text-amber">+$55,000</td></tr>
-    <tr><td>稅費</td><td class="text-right">$119,200</td><td class="text-right">$96,180</td><td class="text-right text-green">-$23,020</td></tr>
-    <tr><td>停車月租</td><td class="text-right">$240,000</td><td class="text-right">$72,000</td><td class="text-right text-green">-$168,000</td></tr>
-    <tr><td>臨停 + eTag + 洗車</td><td class="text-right">$179,280</td><td class="text-right">$179,280</td><td class="text-right">$0</td></tr>
-    <tr class="row-total"><td>10 年總支出</td><td class="text-right">$1,459,015</td><td class="text-right">$2,302,164</td><td class="text-right">+$843,149</td></tr>
+    <tr><td>購車淨成本</td><td class="text-right mono">$0</td><td class="text-right mono">$1,299,900</td><td class="text-right text-amber">+$1,299,900</td></tr>
+    <tr><td>充電樁安裝</td><td class="text-right mono">$0</td><td class="text-right mono">$27,000</td><td class="text-right">+$27,000</td></tr>
+    <tr><td>貸款利息</td><td class="text-right mono">$0</td><td class="text-right mono">$170,597</td><td class="text-right">+$170,597</td></tr>
+    <tr><td>換購補貼</td><td class="text-right mono">$0</td><td class="text-right text-green mono">-$30,000</td><td class="text-right text-green">-$30,000</td></tr>
+    <tr><td>能源費（油/電）</td><td class="text-right mono">$491,452</td><td class="text-right mono">$111,820</td><td class="text-right text-green">-$379,632</td></tr>
+    <tr><td>保養維修</td><td class="text-right mono">$336,428</td><td class="text-right mono">$195,097</td><td class="text-right text-green">-$141,331</td></tr>
+    <tr><td>保險</td><td class="text-right mono">$125,000</td><td class="text-right mono">$180,000</td><td class="text-right text-amber">+$55,000</td></tr>
+    <tr><td>稅費</td><td class="text-right mono">$119,200</td><td class="text-right mono">$96,180</td><td class="text-right text-green">-$23,020</td></tr>
+    <tr><td>停車月租</td><td class="text-right mono">$240,000</td><td class="text-right mono">$72,000</td><td class="text-right text-green">-$168,000</td></tr>
+    <tr><td>臨停 + eTag + 洗車</td><td class="text-right mono">$179,280</td><td class="text-right mono">$179,280</td><td class="text-right">$0</td></tr>
+    <tr class="row-total"><td>10 年總支出</td><td class="text-right mono">$1,491,361</td><td class="text-right mono">$2,301,877</td><td class="text-right">+$810,516</td></tr>
   </table>
 
   <h3>8-5. 考慮殘值後的淨成本</h3>
-  <div class="verdict tied">
-    <div class="title">10 年 TCO 結果：兩者幾乎打平，Focus 略省</div>
-    <div class="amount">NT$ 13,149</div>
-    <div class="desc">
-      Focus 路線淨成本 NT$ 1,909,015（營運 $1,459,015 + 折舊 $450,000）<br>
-      Tesla 路線淨成本 NT$ 1,922,164（購車差 + 利息 + 營運 $833,857 - 殘值 $380,000）
+  <div class="verdict">
+    <div class="verdict-label">10 年 TCO 結果 — Tesla 略省</div>
+    <div class="verdict-amount">NT$ 19,484</div>
+    <div class="verdict-desc">
+      Focus 路線淨成本 NT$ 1,941,361（營運 $1,491,361 + 折舊 $450,000）<br>
+      Tesla 路線淨成本 NT$ 1,921,877（購車差 + 利息 + 營運 $834,380 - 補貼 - 殘值 $380,000）
     </div>
   </div>
 </div>
 
-<!-- Section 9: Breakeven -->
-<div class="section">
-  <h2>九、損益平衡與節省來源</h2>
+<!-- ===== 9. Breakeven ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon green-bg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="card-title"><span class="num">09</span> 損益平衡與節省來源</div>
+  </div>
 
   <table>
-    <tr><td>Tesla 純營運成本每年省</td><td class="text-right text-green">NT$ 62,516</td></tr>
-    <tr><td>換車額外投入成本</td><td class="text-right">NT$ 1,468,307</td></tr>
-    <tr><td>Tesla 殘值優勢（10 年後多值）</td><td class="text-right text-green">NT$ 230,000</td></tr>
-    <tr><td>換車淨成本</td><td class="text-right">NT$ 1,238,307</td></tr>
-    <tr class="row-highlight"><td>靠營運節省回本年數</td><td class="text-right">約 19.8 年</td></tr>
+    <tr><td>Tesla 純營運成本每年省</td><td class="text-right text-green mono">NT$ 65,698</td></tr>
+    <tr><td>換車額外投入成本</td><td class="text-right mono">NT$ 1,467,497</td></tr>
+    <tr><td>Tesla 殘值優勢（10 年後多值）</td><td class="text-right text-green mono">NT$ 230,000</td></tr>
+    <tr><td>換車淨成本</td><td class="text-right mono">NT$ 1,237,497</td></tr>
+    <tr class="row-highlight"><td>靠營運節省回本年數</td><td class="text-right mono">約 18.8 年</td></tr>
+    <tr class="row-highlight"><td>考慮殘值後 10 年 TCO</td><td class="text-right text-green">Tesla 省 $19,484（已回本）</td></tr>
   </table>
 
   <h3>Tesla 每年節省來源拆解</h3>
-  <div class="chart-container" style="max-height:300px;">
+  <div class="chart-wrap" style="max-height:280px;">
     <canvas id="savingsChart"></canvas>
   </div>
   <table>
     <tr><th>節省項目</th><th class="text-right">年省金額</th><th class="text-right">佔比</th></tr>
-    <tr><td>油費 → 電費</td><td class="text-right text-green">NT$ 33,275</td><td class="text-right">53.2%</td></tr>
-    <tr><td>保養維修</td><td class="text-right text-green">NT$ 11,421</td><td class="text-right">18.3%</td></tr>
-    <tr><td>停車月租優惠</td><td class="text-right text-green">NT$ 16,800</td><td class="text-right">26.9%</td></tr>
-    <tr><td>稅費</td><td class="text-right text-green">NT$ 2,302</td><td class="text-right">3.7%</td></tr>
-    <tr><td>保險（Tesla 較貴）</td><td class="text-right text-amber">-NT$ 5,500</td><td class="text-right">-8.8%</td></tr>
-    <tr><td>其他</td><td class="text-right text-green">NT$ 4,218</td><td class="text-right">6.7%</td></tr>
-    <tr class="row-total"><td>合計</td><td class="text-right text-green">NT$ 62,516</td><td class="text-right">100%</td></tr>
+    <tr><td>油費 → 電費</td><td class="text-right text-green mono">NT$ 33,700</td><td class="text-right">51.3%</td></tr>
+    <tr><td>停車月租優惠</td><td class="text-right text-green mono">NT$ 16,800</td><td class="text-right">25.6%</td></tr>
+    <tr><td>保養維修</td><td class="text-right text-green mono">NT$ 14,133</td><td class="text-right">21.5%</td></tr>
+    <tr><td>稅費</td><td class="text-right text-green mono">NT$ 2,302</td><td class="text-right">3.5%</td></tr>
+    <tr><td>保險（Tesla 較貴）</td><td class="text-right text-amber mono">-NT$ 5,500</td><td class="text-right">-8.4%</td></tr>
+    <tr><td>其他</td><td class="text-right text-green mono">NT$ 4,263</td><td class="text-right">6.5%</td></tr>
+    <tr class="row-total"><td>合計</td><td class="text-right text-green mono">NT$ 65,698</td><td class="text-right">100%</td></tr>
   </table>
 </div>
 
-<!-- Section 10: Sensitivity -->
-<div class="section">
-  <h2>十、敏感度分析</h2>
+<!-- ===== 10. Sensitivity ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon amber-bg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+    </div>
+    <div class="card-title"><span class="num">10</span> 敏感度分析</div>
+  </div>
 
   <h3>油價變動影響</h3>
-  <div class="chart-container" style="max-height:300px;">
+  <div class="chart-wrap" style="max-height:280px;">
     <canvas id="sensitivityChart"></canvas>
   </div>
   <table>
     <tr><th>油價變動</th><th class="text-right">Focus 10年油費</th><th class="text-right">10年淨成本差額</th></tr>
-    <tr><td>-10%</td><td class="text-right">NT$ 437,605</td><td class="text-right text-focus">Focus 省約 $6.2 萬</td></tr>
-    <tr><td>不變</td><td class="text-right">NT$ 486,227</td><td class="text-right text-focus">Focus 省約 $1.3 萬</td></tr>
-    <tr><td>+10%</td><td class="text-right">NT$ 534,850</td><td class="text-right text-green">Tesla 省約 $3.6 萬</td></tr>
-    <tr><td>+20%</td><td class="text-right">NT$ 583,473</td><td class="text-right text-green">Tesla 省約 $8.5 萬</td></tr>
-    <tr><td>+30%</td><td class="text-right">NT$ 632,096</td><td class="text-right text-green">Tesla 省約 $13.4 萬</td></tr>
+    <tr><td>-10%</td><td class="text-right mono">NT$ 442,307</td><td class="text-right text-focus">Focus 省約 $3.0 萬</td></tr>
+    <tr><td>不變</td><td class="text-right mono">NT$ 491,452</td><td class="text-right text-green">Tesla 省約 $1.9 萬</td></tr>
+    <tr><td>+10%</td><td class="text-right mono">NT$ 540,597</td><td class="text-right text-green">Tesla 省約 $6.9 萬</td></tr>
+    <tr><td>+20%</td><td class="text-right mono">NT$ 589,742</td><td class="text-right text-green">Tesla 省約 $11.8 萬</td></tr>
+    <tr><td>+30%</td><td class="text-right mono">NT$ 638,887</td><td class="text-right text-green">Tesla 省約 $16.7 萬</td></tr>
   </table>
-  <div class="note">油價不變時 Focus 略省；油價若上漲 10% 以上，Tesla 優勢才開始顯現。</div>
+  <div class="callout green">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span>油價不變時 Tesla 已略省；油價需下跌約 4% 以上，Focus 才開始佔優。</span>
+  </div>
 
   <h3>關鍵變數影響</h3>
   <table>
     <tr><th>情境假設</th><th>對結論的影響</th></tr>
-    <tr><td>Focus 殘值只剩 10 萬</td><td>Tesla 反而省 NT$ 3.7 萬</td></tr>
-    <tr><td>Tesla 車價降 10 萬</td><td>Tesla 省 NT$ 8.7 萬</td></tr>
-    <tr><td>年行駛增加到 2.5 萬 km</td><td>Tesla 每年多省約 2 萬，10 年 Tesla 省約 NT$ 19 萬</td></tr>
-    <tr><td>Focus 出現大修 15 萬</td><td>Tesla 省 NT$ 13.7 萬</td></tr>
-    <tr><td>電動車停車優惠取消</td><td class="text-amber">Focus 省約 NT$ 18 萬</td></tr>
-    <tr><td>2030 後 EV 免稅延長</td><td>Tesla 每年多省約 NT$ 1.6 萬</td></tr>
+    <tr><td>Focus 殘值只剩 10 萬</td><td class="text-green">Tesla 省 NT$ 6.9 萬</td></tr>
+    <tr><td>Tesla 車價降 10 萬</td><td class="text-green">Tesla 省 NT$ 11.9 萬</td></tr>
+    <tr><td>年行駛增加到 2.5 萬 km</td><td class="text-green">Tesla 每年多省約 2 萬，10 年省約 NT$ 22 萬</td></tr>
+    <tr><td>Focus 出現大修 15 萬</td><td class="text-green">Tesla 省 NT$ 16.9 萬</td></tr>
+    <tr><td>電動車停車優惠取消</td><td class="text-amber">Focus 省約 NT$ 14.9 萬</td></tr>
+    <tr><td>2031 後 EV 免稅延長</td><td class="text-green">Tesla 每年多省約 NT$ 1.6 萬</td></tr>
   </table>
 </div>
 
-<!-- Section 11: Non-financial -->
-<div class="section">
-  <h2>十一、非財務因素評估</h2>
+<!-- ===== 11. Non-financial ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon slate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <div class="card-title"><span class="num">11</span> 非財務因素評估</div>
+  </div>
   <table>
     <tr><th>面向</th><th>Focus</th><th>Tesla</th></tr>
     <tr><td>加油/充電便利性</td><td>加油站隨處有，5 分鐘加滿</td><td>家充過夜免跑站；長途需規劃</td></tr>
@@ -557,51 +905,61 @@
   </table>
 </div>
 
-<!-- Section 12: Conclusion -->
-<div class="section">
-  <h2>十二、結論與建議</h2>
+<!-- ===== 12. Conclusion ===== -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-icon green-bg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <div class="card-title"><span class="num">12</span> 結論與建議</div>
+  </div>
 
-  <div class="verdict tied">
-    <div class="title">10 年 TCO 幾乎打平，Focus 略省 NT$ 13,149</div>
-    <div class="desc" style="margin-top:1rem; text-align:left; max-width:600px; margin-left:auto; margin-right:auto;">
-      Tesla 每年節省約 NT$ 6.3 萬營運費用，主要來自：<br>
-      <strong>1.</strong> 油費 → 電費（省 $3.3 萬/年，佔 53%）<br>
-      <strong>2.</strong> 電動車停車優惠（省 $1.7 萬/年，佔 27%）<br>
-      <strong>3.</strong> 保養費較低（省 $1.1 萬/年，佔 18%）
+  <div class="verdict">
+    <div class="verdict-label">10 年 TCO — Tesla 略省 NT$ 19,484</div>
+    <div class="verdict-desc" style="text-align:left; max-width:580px; margin:0 auto;">
+      Tesla 每年節省約 NT$ 6.6 萬營運費用，主要來自：<br>
+      <strong>1.</strong> 油費 → 電費（省 $3.4 萬/年，佔 51%）<br>
+      <strong>2.</strong> 電動車停車優惠（省 $1.7 萬/年，佔 26%）<br>
+      <strong>3.</strong> 保養費較低（省 $1.4 萬/年，佔 22%）
     </div>
   </div>
 
   <h3>現金流注意事項</h3>
-  <div class="note amber">
-    <strong>前 7 年</strong>月支出增加 NT$ 10,995（Focus $12,037 vs Tesla $23,032）<br>
-    <strong>第 8 年起</strong>月支出反而減少 NT$ 4,960（Focus $12,443 vs Tesla $7,483）<br>
-    需確保前 7 年每月多出約 1.1 萬元的還款能力。
+  <div class="callout amber">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>
+      <strong>10 年期間</strong>月支出穩定增加 NT$ 6,333~7,197（Focus ~$12,073 vs Tesla ~$18,406）<br>
+      相較 v3 的 7 年貸款方案（月多 $10,995），月負擔<strong>降低約 40%</strong>。<br>
+      但 10 年都有貸款，不再有「第 8 年後月支出反轉」的優勢。
+    </span>
   </div>
 
-  <h3>建議的決策時機</h3>
+  <h3>建議的決策考量</h3>
   <table>
-    <tr><td><strong>現在換</strong></td><td>如果家庭現金流可承受前 7 年每月多 1.1 萬元的支出。10 年 TCO 兩車幾乎打平，但 Focus 高里程後仍有不確定維修風險（引擎、變速箱），已計入 3 萬元預備金。</td></tr>
-    <tr><td><strong>等 1~2 年</strong></td><td>如果想等 Model Y 進一步降價、或觀察 Focus 在 6~8 萬 km 後的可靠性表現。</td></tr>
-    <tr><td><strong>Focus 出問題時換</strong></td><td>若 Focus 出現大額維修需求（引擎/變速箱），就是最佳換車時機。</td></tr>
+    <tr><td><strong>現在換</strong></td><td>如果家庭現金流可承受每月多 $6,300~7,200 的支出（10 年期間）。10 年 TCO Tesla 已略省，且 Focus 高里程後仍有不確定維修風險。</td></tr>
+    <tr><td><strong>等待觀望</strong></td><td>如果想等 Model Y 進一步降價，每降 10 萬元即多省 10 萬。</td></tr>
+    <tr><td><strong>Focus 出問題時換</strong></td><td>若 Focus 出現大額維修需求（引擎/變速箱），換車優勢將進一步擴大。</td></tr>
   </table>
 </div>
 
-<div class="footer">
+<footer class="footer">
   此報告僅為參考估算，實際費用可能因油價、電價、維修狀況、政策變動等因素而有差異。<br>
-  報告產生日期：2026/02/15 ｜ v3（依原廠定保費用表修正 Focus 保養費用）
-</div>
+  報告產生日期：2026/04/10 ｜ v4（更新貸款方案、換購補貼、充電樁安裝費；以實際保養費用修正 Focus 保養預估）
+</footer>
 
 </div><!-- /container -->
 
 <script>
-const focusColor = '#1a56db';
-const teslaColor = '#e31937';
-const focusColorAlpha = 'rgba(26,86,219,0.15)';
-const teslaColorAlpha = 'rgba(227,25,55,0.15)';
-const greenColor = '#16a34a';
+const focusColor = '#1E40AF';
+const teslaColor = '#DC2626';
+const focusColorAlpha = 'rgba(30,64,175,0.12)';
+const teslaColorAlpha = 'rgba(220,38,38,0.12)';
+const greenColor = '#059669';
 
-Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif';
+Chart.defaults.font.family = "'Inter', -apple-system, 'Noto Sans TC', sans-serif";
 Chart.defaults.font.size = 12;
+Chart.defaults.color = '#64748B';
+Chart.defaults.borderColor = '#E2E8F0';
 
 // Maintenance Comparison Chart
 new Chart(document.getElementById('maintenanceChart'), {
@@ -609,14 +967,14 @@ new Chart(document.getElementById('maintenanceChart'), {
   data: {
     labels: ['原廠定保', '輪胎', '煞車系統', '電瓶', '雨刷', '其他'],
     datasets: [
-      { label: 'Focus', data: [117408, 90000, 44900, 10000, 9000, 38000], backgroundColor: focusColor },
-      { label: 'Tesla', data: [0, 134000, 16715, 8000, 20960, 15422], backgroundColor: teslaColor }
+      { label: 'Focus', data: [144528, 90000, 44900, 10000, 9000, 38000], backgroundColor: focusColor, borderRadius: 4 },
+      { label: 'Tesla', data: [0, 134000, 16715, 8000, 20960, 15422], backgroundColor: teslaColor, borderRadius: 4 }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: '10 年保養費用結構比較（NT$）' },
+      title: { display: true, text: '10 年保養費用結構比較（NT$）', font: { weight: 600, size: 13 } },
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.y.toLocaleString() } }
     },
     scales: { y: { ticks: { callback: v => 'NT$ ' + (v/1000) + 'K' } } }
@@ -629,14 +987,14 @@ new Chart(document.getElementById('opsChart'), {
   data: {
     labels: ['Y1','Y2','Y3','Y4','Y5','Y6','Y7','Y8','Y9','Y10'],
     datasets: [
-      { label: 'Focus', data: [141684,142573,143478,144402,145345,146306,147287,148287,149307,150348], backgroundColor: focusColor },
-      { label: 'Tesla', data: [73768,73768,73768,73768,89798,89798,89798,89798,89798,89798], backgroundColor: teslaColor }
+      { label: 'Focus', data: [144873,145771,146687,147621,148573,149545,150536,151547,152578,153630], backgroundColor: focusColor, borderRadius: 4 },
+      { label: 'Tesla', data: [73820,73820,73820,73820,89850,89850,89850,89850,89850,89850], backgroundColor: teslaColor, borderRadius: 4 }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: '年度純營運成本比較（NT$）' },
+      title: { display: true, text: '年度純營運成本比較（NT$）', font: { weight: 600, size: 13 } },
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.y.toLocaleString() } }
     },
     scales: { y: { beginAtZero: true, ticks: { callback: v => (v/10000) + '萬' } } }
@@ -649,16 +1007,15 @@ new Chart(document.getElementById('pocketChart'), {
   data: {
     labels: ['Y0','Y1','Y2','Y3','Y4','Y5','Y6','Y7','Y8','Y9','Y10'],
     datasets: [
-      { label: 'Focus 累計', data: [0,141684,284257,427735,572137,717482,863788,1011075,1159362,1308669,1459015], borderColor: focusColor, backgroundColor: focusColorAlpha, fill: true, tension: 0.3 },
-      { label: 'Tesla 累計', data: [50000,326383,602766,879149,1155532,1447945,1740358,2032771,2122569,2212366,2302164], borderColor: teslaColor, backgroundColor: teslaColorAlpha, fill: true, tension: 0.3 }
+      { label: 'Focus 累計', data: [0,144873,290644,437331,584952,733525,883070,1033606,1185153,1337731,1491361], borderColor: focusColor, backgroundColor: focusColorAlpha, fill: true, tension: 0.3, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5 },
+      { label: 'Tesla 累計', data: [0,220870,441740,662610,883480,1120380,1357280,1594180,1831080,2067980,2304880], borderColor: teslaColor, backgroundColor: teslaColorAlpha, fill: true, tension: 0.3, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5 }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: '累計口袋支出（含貸款）' },
-      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.y.toLocaleString() } },
-      annotation: { annotations: { line1: { type:'line', yMin:0, yMax:0 } } }
+      title: { display: true, text: '累計口袋支出（含貸款）', font: { weight: 600, size: 13 } },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.y.toLocaleString() } }
     },
     scales: { y: { ticks: { callback: v => (v/10000) + '萬' } } }
   }
@@ -670,20 +1027,20 @@ new Chart(document.getElementById('tcoBreakdownChart'), {
   data: {
     labels: ['Focus', 'Tesla'],
     datasets: [
-      { label: '購車+充電樁+利息', data: [0, 1468307], backgroundColor: '#94a3b8' },
-      { label: '能源費', data: [486227, 111300], backgroundColor: '#f59e0b' },
-      { label: '保養維修', data: [309308, 195097], backgroundColor: '#6366f1' },
-      { label: '保險', data: [125000, 180000], backgroundColor: '#ec4899' },
-      { label: '稅費', data: [119200, 96180], backgroundColor: '#14b8a6' },
-      { label: '停車', data: [240000, 72000], backgroundColor: '#8b5cf6' },
-      { label: '其他（臨停+eTag+洗車）', data: [179280, 179280], backgroundColor: '#d1d5db' }
+      { label: '購車+充電樁+利息-補貼', data: [0, 1467497], backgroundColor: '#94A3B8', borderRadius: 4 },
+      { label: '能源費', data: [491452, 111820], backgroundColor: '#F59E0B', borderRadius: 4 },
+      { label: '保養維修', data: [336428, 195097], backgroundColor: '#6366F1', borderRadius: 4 },
+      { label: '保險', data: [125000, 180000], backgroundColor: '#EC4899', borderRadius: 4 },
+      { label: '稅費', data: [119200, 96180], backgroundColor: '#14B8A6', borderRadius: 4 },
+      { label: '停車', data: [240000, 72000], backgroundColor: '#8B5CF6', borderRadius: 4 },
+      { label: '其他（臨停+eTag+洗車）', data: [179280, 179280], backgroundColor: '#CBD5E1', borderRadius: 4 }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     indexAxis: 'y',
     plugins: {
-      title: { display: true, text: '10 年總支出結構比較' },
+      title: { display: true, text: '10 年總支出結構比較', font: { weight: 600, size: 13 } },
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': NT$ ' + ctx.parsed.x.toLocaleString() } }
     },
     scales: {
@@ -697,19 +1054,20 @@ new Chart(document.getElementById('tcoBreakdownChart'), {
 new Chart(document.getElementById('savingsChart'), {
   type: 'doughnut',
   data: {
-    labels: ['油費→電費 $33,275', '停車優惠 $16,800', '保養維修 $11,421', '其他 $4,218', '稅費 $2,302'],
+    labels: ['油費→電費 $33,700', '停車優惠 $16,800', '保養維修 $14,133', '其他 $4,263', '稅費 $2,302'],
     datasets: [{
-      data: [33275, 16800, 11421, 4218, 2302],
-      backgroundColor: ['#f59e0b', '#8b5cf6', '#6366f1', '#94a3b8', '#14b8a6'],
-      borderWidth: 2, borderColor: '#fff'
+      data: [33700, 16800, 14133, 4263, 2302],
+      backgroundColor: ['#F59E0B', '#8B5CF6', '#6366F1', '#94A3B8', '#14B8A6'],
+      borderWidth: 2, borderColor: '#fff',
+      hoverOffset: 8
     }]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    cutout: '55%',
+    cutout: '60%',
     plugins: {
-      title: { display: true, text: 'Tesla 每年節省 NT$ 62,516 來源' },
-      tooltip: { callbacks: { label: ctx => ctx.label + ' (' + Math.round(ctx.parsed/625.16) + '%)' } }
+      title: { display: true, text: 'Tesla 每年節省 NT$ 65,698 來源', font: { weight: 600, size: 13 } },
+      tooltip: { callbacks: { label: ctx => ctx.label + ' (' + Math.round(ctx.parsed/656.98) + '%)' } }
     }
   }
 });
@@ -721,15 +1079,15 @@ new Chart(document.getElementById('sensitivityChart'), {
     labels: ['-10%', '不變', '+10%', '+20%', '+30%'],
     datasets: [{
       label: 'Tesla 10年淨省金額',
-      data: [-62000, -13149, 36000, 85000, 134000],
-      backgroundColor: ctx => ctx.parsed.y >= 0 ? greenColor : '#ef4444',
+      data: [-30000, 19484, 69000, 118000, 167000],
+      backgroundColor: ctx => ctx.parsed.y >= 0 ? greenColor : '#EF4444',
       borderRadius: 4
     }]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      title: { display: true, text: '油價變動對 10 年 TCO 差額的影響（NT$）' },
+      title: { display: true, text: '油價變動對 10 年 TCO 差額的影響（NT$）', font: { weight: 600, size: 13 } },
       legend: { display: false },
       tooltip: { callbacks: { label: ctx => 'NT$ ' + ctx.parsed.y.toLocaleString() } }
     },
@@ -737,7 +1095,7 @@ new Chart(document.getElementById('sensitivityChart'), {
       x: { title: { display: true, text: '油價變動幅度' } },
       y: {
         ticks: { callback: v => (v >= 0 ? '+' : '') + (v/10000) + '萬' },
-        grid: { color: ctx => ctx.tick.value === 0 ? '#64748b' : '#e2e8f0' }
+        grid: { color: ctx => ctx.tick.value === 0 ? '#475569' : '#E2E8F0' }
       }
     }
   }
